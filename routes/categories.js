@@ -59,7 +59,7 @@ router.post('/update', async function(req, res, next) {
   }
 });
 
-router.delete('/delete', async function(req, res, next) {
+router.post('/delete', async function(req, res, next) {
   let body = req.body;
   try {
     if (!body._id) {

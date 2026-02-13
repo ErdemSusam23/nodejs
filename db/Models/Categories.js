@@ -18,4 +18,4 @@ const schema = mongoose.Schema({
 class Categories extends mongoose.Model { }
 
 schema.loadClass(Categories);
-module.exports = mongoose.model("categories", schema);
+module.exports = mongoose.models.categories || mongoose.model("categories", schema);

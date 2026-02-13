@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Roles = require('../db/Models/Roles'); 
+const Roles = require('../db/models/Roles'); 
 const RolePrivileges = require('../db/models/RolePrivileges'); // EKLENDİ
 const rolePrivileges = require('../config/role_privileges');
 const Response = require('../lib/Response');

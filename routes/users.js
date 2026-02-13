@@ -1,4 +1,5 @@
 var express = require('express');
+const jwt = require('jsonwebtoken');
 var router = express.Router();
 const bcrypt = require('bcryptjs');
 const Users = require('../db/models/Users');
@@ -9,6 +10,10 @@ const Response = require('../lib/Response');
 const CustomError = require('../lib/Error');
 const Enums = require('../config/Enums');
 const role_privileges = require('../config/role_privileges');
+const config = require('../config');
+const AuditLogs = require('../lib/AuditLogs');
+
+
 
 /* GET Users Listing - Tüm kullanıcıları ve Rollerini getir */
 router.get('/', async function(req, res, next) {
@@ -50,6 +55,53 @@ router.get('/', async function(req, res, next) {
         res.json(Response.successResponse(users));
 
     } catch (err) {
+        let errorResponse = Response.errorResponse(err);
+        res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);
+    }
+});
+
+/* POST Login */
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            throw new CustomError(Enums.HTTP_CODES.BAD_REQUEST, 'Validation Error', 'Email and password are required');
+        }
+
+        const user = await Users.findOne({ email: email });
+        if (!user) {
+            throw new CustomError(Enums.HTTP_CODES.UNAUTHORIZED, 'Auth Error', 'Email or Password wrong');
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            throw new CustomError(Enums.HTTP_CODES.UNAUTHORIZED, 'Auth Error', 'Email or Password wrong');
+        }
+
+        const payload = {
+            id: user._id,
+            email: user.email
+        };
+
+        const token = jwt.sign(payload, config.JWT.SECRET, {
+            expiresIn: config.JWT.EXPIRE_TIME
+        });
+
+        AuditLogs.info(email, "Users", "Login", { _id: user._id });
+
+        res.json(Response.successResponse({
+            token: token,
+            user: {
+                id: user._id,
+                email: user.email,
+                first_name: user.first_name,
+                last_name: user.last_name
+            }
+        }));
+
+    } catch (err) {
+        AuditLogs.error(req.body?.email || "Unknown", "Users", "Login", err);
         let errorResponse = Response.errorResponse(err);
         res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);
     }

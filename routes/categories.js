@@ -5,6 +5,11 @@ const Response = require('../lib/Response');
 const Enums = require('../config/Enums');
 const CustomError = require('../lib/Error');
 const AuditLogs = require('../lib/AuditLogs'); 
+const auth = require('../lib/auth')();
+
+router.all("*", auth.authenticate(), (req, res, next) => {
+    next();
+});
 
 /* GET Categories - Listeleme */
 router.get('/', async function(req, res, next) {

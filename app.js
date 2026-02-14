@@ -6,6 +6,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const config = require('./config');
+const Response = require('./lib/Response')
 const I18n = require('./lib/I18n');
 
 var app = express();
@@ -42,20 +43,11 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
-//HATA YAKALAYICI 
+// HATA YAKALAYICI (Error Handler)
 app.use(function(err, req, res, next) {
-  let errorMessage = err.message;
-  let errorDetails = req.app.get('env') === 'development' ? err.stack : {};
-
+  const errorResponse = Response.errorResponse(err);
   console.error("APP ERROR:", err);
-
-  res.status(err.status || 500).json({
-      code: err.status || 500,
-      error: {
-          message: errorMessage,
-          description: errorDetails
-      }
-  });
+  res.status(errorResponse.code).json(errorResponse);
 });
 
 module.exports = app;

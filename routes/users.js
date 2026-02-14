@@ -12,6 +12,7 @@ const CustomError = require('../lib/Error');
 const Enums = require('../config/Enums');
 const AuditLogs = require('../lib/AuditLogs'); 
 const role_privileges = require('../config/role_privileges');
+const Export = require('../lib/Export');
 
 // YENİ EKLEMELER:
 const auth = require('../lib/auth')();
@@ -187,6 +188,32 @@ router.post('/login', validate(schemas.login), async (req, res) => {
 
     } catch (err) {
         AuditLogs.error(req.body?.email || "Unknown", "Users", "Login", err);
+        let errorResponse = Response.errorResponse(err);
+        res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);
+    }
+});
+
+router.post('/export', auth.authenticate(), auth.checkPrivileges("user_view"), async function(req, res, next) {
+    try {
+        // 1. Tüm kullanıcıları çek (Şifreleri hariç tut)
+        let users = await Users.find({}, { password: 0, __v: 0 }).lean(); 
+        // .lean() kullanmak performansı artırır, saf JSON döner.
+
+        // 2. Excel Sütunlarını Tanımla
+        // header: Excel'de görünecek isim, key: Veritabanındaki alan adı
+        let columns = [
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'First Name', key: 'first_name', width: 20 },
+            { header: 'Last Name', key: 'last_name', width: 20 },
+            { header: 'Phone', key: 'phone_number', width: 15 },
+            { header: 'Active?', key: 'is_active', width: 10 },
+            { header: 'Created At', key: 'created_at', width: 25 }
+        ];
+
+        // 3. Excel dosyasını oluştur ve gönder
+        await Export.toExcel(columns, users, "Users_List", res);
+
+    } catch (err) {
         let errorResponse = Response.errorResponse(err);
         res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);
     }

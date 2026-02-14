@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const Users = require('../db/models/Users');
+const Users = require('../db/Models/Users');
 const UserRoles = require('../db/models/UserRoles');
 const Roles = require('../db/models/Roles');
 const RolePrivileges = require('../db/models/RolePrivileges');
@@ -44,7 +44,9 @@ router.get('/', auth.authenticate(), auth.checkPrivileges("user_view"), async fu
             },
             {
                 $project: {
-                    password: 0 // Şifreyi asla dönme
+                    password: 0,
+                    user_roles: 0,
+                    __v: 0
                 }
             }
         ]);

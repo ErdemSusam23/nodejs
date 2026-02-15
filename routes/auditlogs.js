@@ -6,10 +6,23 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
     /*
-        #swagger.tags = [AuditLogs]
-        #sawgger.summary = 'Get Logs'
-        #swagger.description = 'Loglari listeler'
-        #swagger.path = '/auditlogs/add'
+        #swagger.tags = ['AuditLogs']
+        #swagger.summary = 'Get audit logs'
+        #swagger.description = 'Retrieve audit logs with optional date range filtering and pagination'
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Audit log query parameters',
+            required: false,
+            schema: {
+                begin_date: '2024-01-01',
+                end_date: '2024-12-31',
+                skip: 0,
+                limit: 100
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Audit logs retrieved successfully'
+        }
     */
     try {
         let body = req.body;
@@ -17,7 +30,6 @@ router.post('/', async (req, res) => {
         let skip = body.skip;
         let limit = body.limit;
 
-        // Sayfalama için varsayılan değerler
         if (typeof skip !== "number") {
             skip = 0;
         }
@@ -26,21 +38,18 @@ router.post('/', async (req, res) => {
             limit = 500;
         }
 
-        // 1. Tarih Aralığı Filtresi (Begin Date - End Date)
         if (body.begin_date && body.end_date) {
             query.created_at = {
-                $gte: moment(body.begin_date).toDate(), // Büyük Eşit
-                $lte: moment(body.end_date).toDate()    // Küçük Eşit
+                $gte: moment(body.begin_date).toDate(),
+                $lte: moment(body.end_date).toDate()
             }
         } else {
-            // Eğer tarih yoksa son 1 günü getir (Performans için)
             query.created_at = {
                 $gte: moment().subtract(1, 'day').startOf('day').toDate(),
                 $lte: moment().toDate()
             }
         }
 
-        // 2. Veriyi Çek ve Sırala (Yeniden eskiye)
         let auditLogs = await AuditLogs.find(query)
             .sort({ created_at: -1 })
             .skip(skip)

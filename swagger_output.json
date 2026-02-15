@@ -1,282 +1,67 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Node.js Backend API",
-    "description": "Otomatik oluşturulan dokümantasyon",
-    "version": "0.0.0"
+    "title": "API Documentation",
+    "description": "RESTful API Documentation - User, Role, Category Management System",
+    "version": "1.0.0"
   },
   "host": "localhost:3000",
   "basePath": "/api",
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Roles",
+      "description": "Role and permission management endpoints"
+    },
+    {
+      "name": "Categories",
+      "description": "Category management endpoints"
+    },
+    {
+      "name": "AuditLogs",
+      "description": "Audit log endpoints"
+    },
+    {
+      "name": "Upload",
+      "description": "File upload endpoints"
+    },
+    {
+      "name": "Email",
+      "description": "Email testing endpoints"
+    }
+  ],
   "schemes": [
-    "http"
+    "http",
+    "https"
   ],
   "securityDefinitions": {
     "bearerAuth": {
       "type": "apiKey",
-      "name": "Authorization",
       "in": "header",
-      "description": "JWT Token (Başına \"Bearer \" eklemeyi unutma)"
+      "name": "Authorization",
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
     }
   },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
-    "/auditlogs/add": {
-      "post": {
-        "tags": [],
-        "description": "Loglari listeler",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "skip": {
-                  "example": "any"
-                },
-                "limit": {
-                  "example": "any"
-                },
-                "begin_date": {
-                  "example": "any"
-                },
-                "end_date": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/categories/": {
-      "get": {
-        "tags": [],
-        "description": "Category listeler",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/add": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "example": "any"
-                },
-                "password": {
-                  "example": "any"
-                },
-                "first_name": {
-                  "example": "any"
-                },
-                "last_name": {
-                  "example": "any"
-                },
-                "phone_number": {
-                  "example": "any"
-                },
-                "roles": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/update": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "password": {
-                  "example": "any"
-                },
-                "first_name": {
-                  "example": "any"
-                },
-                "last_name": {
-                  "example": "any"
-                },
-                "phone_number": {
-                  "example": "any"
-                },
-                "is_active": {
-                  "example": "any"
-                },
-                "_id": {
-                  "example": "any"
-                },
-                "roles": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/delete": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "_id": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/test": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "to": {
-                  "example": "any"
-                },
-                "subject": {
-                  "example": "any"
-                },
-                "body": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/": {
       "get": {
         "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "post": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/permissions": {
-      "get": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/role_privileges": {
-      "get": {
-        "description": "",
         "parameters": [
           {
-            "name": "role_id",
-            "in": "query",
+            "name": "accept-language",
+            "in": "header",
             "type": "string"
           }
         ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/login": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "example": "any"
-                },
-                "password": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/export": {
-      "post": {
-        "description": "",
         "responses": {
           "default": {
             "description": ""
@@ -284,30 +69,81 @@
         }
       }
     },
-    "/register": {
-      "post": {
-        "description": "",
+    "/api/users/": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get all users",
+        "description": "Retrieve a list of all users with their roles",
         "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/add": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Add a new user",
+        "description": "Create a new user account (Admin only)",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
+            "description": "User information",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
-                "password": {
-                  "example": "any"
-                },
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "newuser@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "SecurePass123"
                 },
                 "first_name": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "John"
                 },
                 "last_name": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "Doe"
                 },
                 "phone_number": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "+905551234567"
+                },
+                "roles": {
+                  "type": "array",
+                  "example": [
+                    "507f1f77bcf86cd799439012"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -315,15 +151,926 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "User created successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/update": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update an existing user",
+        "description": "Update user information and roles",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User update information",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439011"
+                },
+                "first_name": {
+                  "type": "string",
+                  "example": "John"
+                },
+                "last_name": {
+                  "type": "string",
+                  "example": "Doe"
+                },
+                "phone_number": {
+                  "type": "string",
+                  "example": "+905551234567"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "password": {
+                  "type": "string",
+                  "example": "NewPassword123"
+                },
+                "roles": {
+                  "type": "array",
+                  "example": [
+                    "507f1f77bcf86cd799439012"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/delete": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete a user",
+        "description": "Delete a user and their role associations",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User ID to delete",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439011"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "User login",
+        "description": "Authenticate user and receive JWT token",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Login credentials",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "user@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "password123"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          }
+        }
+      }
+    },
+    "/api/users/export": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Export users to Excel",
+        "description": "Download all users as an Excel file",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Excel file download"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Register first user (Initial setup)",
+        "description": "Register the first super admin user. Only works if no users exist.",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User registration information",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "admin@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "AdminPass123"
+                },
+                "first_name": {
+                  "type": "string",
+                  "example": "Admin"
+                },
+                "last_name": {
+                  "type": "string",
+                  "example": "User"
+                },
+                "phone_number": {
+                  "type": "string",
+                  "example": "+905551234567"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "System initialized successfully"
+          }
+        }
+      }
+    },
+    "/api/roles/": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Get all roles",
+        "description": "Retrieve a list of all roles in the system",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roles retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/roles/permissions": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Get all available permissions",
+        "description": "Retrieve all system permissions for role assignment",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permissions retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/roles/role_privileges": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Get privileges for a specific role",
+        "description": "Retrieve all privileges assigned to a role",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "role_id",
+            "in": "query",
+            "description": "Role ID",
+            "required": true,
+            "type": "string",
+            "example": "507f1f77bcf86cd799439012"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role privileges retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/roles/add": {
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Add a new role",
+        "description": "Create a new role with permissions",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role information",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "role_name": {
+                  "type": "string",
+                  "example": "Admin"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "permissions": {
+                  "type": "array",
+                  "example": [
+                    "user_view",
+                    "user_add",
+                    "user_update",
+                    "user_delete"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role created successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/roles/update": {
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Update an existing role",
+        "description": "Update role information and permissions",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role update information",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439012"
+                },
+                "role_name": {
+                  "type": "string",
+                  "example": "Super Admin"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "permissions": {
+                  "type": "array",
+                  "example": [
+                    "user_view",
+                    "user_add",
+                    "user_update",
+                    "user_delete"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role updated successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/roles/delete": {
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Delete a role",
+        "description": "Delete a role and its associated privileges",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role ID to delete",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439012"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role deleted successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/categories/": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Get all categories",
+        "description": "Retrieve a list of all categories",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Categories retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/categories/add": {
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Add a new category",
+        "description": "Create a new category",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Category information",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Electronics"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category created successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/categories/update": {
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Update an existing category",
+        "description": "Update category information",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Category update information",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439014"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "Home Electronics"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category updated successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/categories/delete": {
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Delete a category",
+        "description": "Delete a category from the system",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Category ID to delete",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439014"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category deleted successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auditlogs/": {
+      "post": {
+        "tags": [
+          "AuditLogs"
+        ],
+        "summary": "Get audit logs",
+        "description": "Retrieve audit logs with optional date range filtering and pagination",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Audit log query parameters",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "begin_date": {
+                  "type": "string",
+                  "example": "2024-01-01"
+                },
+                "end_date": {
+                  "type": "string",
+                  "example": "2024-12-31"
+                },
+                "skip": {
+                  "type": "number",
+                  "example": 0
+                },
+                "limit": {
+                  "type": "number",
+                  "example": 100
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit logs retrieved successfully"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/routes/": {
+      "post": {
+        "tags": [
+          "Upload"
+        ],
+        "summary": "Upload a file",
+        "description": "Upload a single file to the server",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "File to upload"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File uploaded successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/email/test": {
+      "post": {
+        "tags": [
+          "Email"
+        ],
+        "summary": "Test email sending",
+        "description": "Send a test email to verify email configuration",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Email test parameters",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "to": {
+                  "type": "string",
+                  "example": "recipient@example.com"
+                },
+                "subject": {
+                  "type": "string",
+                  "example": "Test Email"
+                },
+                "body": {
+                  "type": "string",
+                  "example": "This is a test email message"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Email sent successfully"
           }
         }
       }
     }
   },
-  "security": [
-    {
-      "bearerAuth": []
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "user@example.com"
+        },
+        "first_name": {
+          "type": "string",
+          "example": "John"
+        },
+        "last_name": {
+          "type": "string",
+          "example": "Doe"
+        },
+        "phone_number": {
+          "type": "string",
+          "example": "+905551234567"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "roles": {
+          "type": "array",
+          "example": [
+            "role_id_1",
+            "role_id_2"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Role": {
+      "type": "object",
+      "properties": {
+        "role_name": {
+          "type": "string",
+          "example": "Admin"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "permissions": {
+          "type": "array",
+          "example": [
+            "user_view",
+            "user_add",
+            "user_update",
+            "user_delete"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Category": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Electronics"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "Login": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "user@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        }
+      }
+    },
+    "LoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        },
+        "user": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "example": "507f1f77bcf86cd799439011"
+            },
+            "email": {
+              "type": "string",
+              "example": "user@example.com"
+            },
+            "first_name": {
+              "type": "string",
+              "example": "John"
+            },
+            "last_name": {
+              "type": "string",
+              "example": "Doe"
+            }
+          }
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "example": "Error message"
+            },
+            "description": {
+              "type": "string",
+              "example": "Error description"
+            }
+          }
+        }
+      }
+    },
+    "Success": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
     }
-  ]
+  }
 }

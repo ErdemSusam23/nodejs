@@ -8,11 +8,9 @@ var logger = require('morgan');
 const config = require('./config');
 const Response = require('./lib/Response')
 const I18n = require('./lib/I18n');
-const swaggerJSDoc = require("swagger-jsdoc");
-const swaggerUI = require('swagger-ui-express');
 
-const swaggerSpec = swaggerJSDoc(config.SWAGGER);
-
+//Swagger
+const swaggerUi = require('swagger-ui-express');
 const swaggerDoc = require('./swagger_output.json');
 
 var app = express();
@@ -36,7 +34,7 @@ app.use((req, res, next) => {
 });
 
 // 2. SONRA SWAGGER (Adresi /api-docs olarak düzelttim)
-app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 // 3. SONRA API ROTALARI
 app.use('/api', require('./routes/index'));

@@ -9,18 +9,22 @@ const auth = require('../lib/auth')();
 const validate = require('../lib/validate');
 const schemas = require('./validations/Categories');
 
-// Tüm isteklerde önce Token kontrolü (Authentication)
 router.all("*", auth.authenticate(), (req, res, next) => {
     next();
 });
 
-/* GET Categories - Listeleme */
+/* GET Categories */
 router.get('/', auth.checkPrivileges("category_view"), async function(req, res, next) {
     /*
-        #swagger.tags = [Categories]
-        #sawgger.summary = 'Get Categories'
-        #swagger.description = 'Category listeler'
-        #swagger.path = '/categories/'
+        #swagger.tags = ['Categories']
+        #swagger.summary = 'Get all categories'
+        #swagger.description = 'Retrieve a list of all categories'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.responses[200] = {
+            description: 'Categories retrieved successfully'
+        }
     */
     try {
         let categories = await Categories.find({});
@@ -31,8 +35,28 @@ router.get('/', auth.checkPrivileges("category_view"), async function(req, res, 
     } 
 });
 
-/* POST Add Category - Ekleme */
+/* POST Add Category */
 router.post('/add', auth.checkPrivileges("category_add"), validate(schemas.create), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Categories']
+        #swagger.summary = 'Add a new category'
+        #swagger.description = 'Create a new category'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Category information',
+            required: true,
+            schema: {
+                name: 'Electronics',
+                is_active: true
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Category created successfully'
+        }
+    */
     let body = req.body;
     try {
         let category = new Categories({
@@ -51,12 +75,32 @@ router.post('/add', auth.checkPrivileges("category_add"), validate(schemas.creat
     }
 });
 
-/* POST Update Category - Güncelleme */
+/* POST Update Category */
 router.post('/update', auth.checkPrivileges("category_update"), validate(schemas.update), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Categories']
+        #swagger.summary = 'Update an existing category'
+        #swagger.description = 'Update category information'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Category update information',
+            required: true,
+            schema: {
+                _id: '507f1f77bcf86cd799439014',
+                name: 'Home Electronics',
+                is_active: true
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Category updated successfully'
+        }
+    */
     let body = req.body;
     try {
         let updates = {};
-        // GELEN VERİLERİ UPDATES OBJESİNE AKTARALIM
         if (body.name) updates.name = body.name;
         if (typeof body.is_active === "boolean") updates.is_active = body.is_active;
 
@@ -76,8 +120,27 @@ router.post('/update', auth.checkPrivileges("category_update"), validate(schemas
     }
 });
 
-/* POST Delete Category - Silme */
+/* POST Delete Category */
 router.post('/delete', auth.checkPrivileges("category_delete"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Categories']
+        #swagger.summary = 'Delete a category'
+        #swagger.description = 'Delete a category from the system'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Category ID to delete',
+            required: true,
+            schema: {
+                _id: '507f1f77bcf86cd799439014'
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Category deleted successfully'
+        }
+    */
     let body = req.body;
     try {
         if (!body._id) throw new CustomError(Enums.HTTP_CODES.BAD_REQUEST, 'Validation Error', '_id is required');

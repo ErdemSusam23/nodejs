@@ -5,10 +5,27 @@ const Response = require('../lib/Response');
 const Enums = require('../config/Enums');
 
 router.post('/test', async (req, res) => {
+    /*
+        #swagger.tags = ['Email']
+        #swagger.summary = 'Test email sending'
+        #swagger.description = 'Send a test email to verify email configuration'
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Email test parameters',
+            required: false,
+            schema: {
+                to: 'recipient@example.com',
+                subject: 'Test Email',
+                body: 'This is a test email message'
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Email sent successfully'
+        }
+    */
     try {
         const { to, subject, body } = req.body;
         
-        // Basit bir HTML maili gönderelim
         let result = await email.send(
             to || "test@example.com", 
             subject || "Test Email", 

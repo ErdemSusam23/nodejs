@@ -14,17 +14,23 @@ const AuditLogs = require('../lib/AuditLogs');
 const role_privileges = require('../config/role_privileges');
 const Export = require('../lib/Export');
 
-// YENİ EKLEMELER:
 const auth = require('../lib/auth')();
 const validate = require('../lib/validate');
 const schemas = require('./validations/Users');
 
-// Tüm rotalar için auth kontrolü yapmıyoruz, çünkü Login ve Register public olmalı.
-// Bu yüzden router.all('*', auth...) BURADA KULLANMIYORUZ.
-// Her rotaya tek tek auth ekleyeceğiz.
-
 /* GET Users Listing - Listeleme */
 router.get('/', auth.authenticate(), auth.checkPrivileges("user_view"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Get all users'
+        #swagger.description = 'Retrieve a list of all users with their roles'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.responses[200] = {
+            description: 'Users retrieved successfully'
+        }
+    */
     try {
         let users = await Users.aggregate([
             {
@@ -59,13 +65,34 @@ router.get('/', auth.authenticate(), auth.checkPrivileges("user_view"), async fu
     }
 });
 
-/* POST Add User - Yeni Kullanıcı Ekleme (Admin panelinden) */
+/* POST Add User - Yeni Kullanıcı Ekleme */
 router.post('/add', auth.authenticate(), auth.checkPrivileges("user_add"), validate(schemas.create), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Add a new user'
+        #swagger.description = 'Create a new user account (Admin only)'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'User information',
+            required: true,
+            schema: {
+                email: 'newuser@example.com',
+                password: 'SecurePass123',
+                first_name: 'John',
+                last_name: 'Doe',
+                phone_number: '+905551234567',
+                roles: ['507f1f77bcf86cd799439012']
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'User created successfully'
+        }
+    */
     let body = req.body;
     try {
-        // Validation middleware hallettiği için if (!body.email) kontrollerini sildik.
-
-        // Mükerrer Kayıt Kontrolü
         let existingUser = await Users.findOne({ email: body.email });
         if (existingUser) {
             return res.status(Enums.HTTP_CODES.CONFLICT).json(
@@ -104,6 +131,31 @@ router.post('/add', auth.authenticate(), auth.checkPrivileges("user_add"), valid
 
 /* POST Update User */
 router.post('/update', auth.authenticate(), auth.checkPrivileges("user_update"), validate(schemas.update), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Update an existing user'
+        #swagger.description = 'Update user information and roles'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'User update information',
+            required: true,
+            schema: {
+                _id: '507f1f77bcf86cd799439011',
+                first_name: 'John',
+                last_name: 'Doe',
+                phone_number: '+905551234567',
+                is_active: true,
+                password: 'NewPassword123',
+                roles: ['507f1f77bcf86cd799439012']
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'User updated successfully'
+        }
+    */
     let body = req.body;
     try {
         let updates = {};
@@ -137,8 +189,25 @@ router.post('/update', auth.authenticate(), auth.checkPrivileges("user_update"),
 
 /* POST Delete User */
 router.post('/delete', auth.authenticate(), auth.checkPrivileges("user_delete"), async function(req, res, next) {
-    // Delete için genellikle sadece ID validasyonu yeterli, o yüzden inline check yapabiliriz veya schema yazabiliriz.
-    // Şimdilik schema kullanmadan devam edelim veya update şemasının sadece ID kısmını kullanabiliriz.
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Delete a user'
+        #swagger.description = 'Delete a user and their role associations'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'User ID to delete',
+            required: true,
+            schema: {
+                _id: '507f1f77bcf86cd799439011'
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'User deleted successfully'
+        }
+    */
     let body = req.body;
     try {
         if (!body._id) throw new CustomError(Enums.HTTP_CODES.BAD_REQUEST, 'Validation Error', '_id is required');
@@ -156,8 +225,25 @@ router.post('/delete', auth.authenticate(), auth.checkPrivileges("user_delete"),
     }
 });
 
-/* POST Login - (Public Route - Auth Yok) */
+/* POST Login */
 router.post('/login', validate(schemas.login), async (req, res) => {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'User login'
+        #swagger.description = 'Authenticate user and receive JWT token'
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Login credentials',
+            required: true,
+            schema: {
+                email: 'user@example.com',
+                password: 'password123'
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Login successful'
+        }
+    */
     try {
         const { email, password } = req.body;
 
@@ -193,14 +279,22 @@ router.post('/login', validate(schemas.login), async (req, res) => {
     }
 });
 
+/* POST Export Users */
 router.post('/export', auth.authenticate(), auth.checkPrivileges("user_view"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Export users to Excel'
+        #swagger.description = 'Download all users as an Excel file'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.responses[200] = {
+            description: 'Excel file download'
+        }
+    */
     try {
-        // 1. Tüm kullanıcıları çek (Şifreleri hariç tut)
         let users = await Users.find({}, { password: 0, __v: 0 }).lean(); 
-        // .lean() kullanmak performansı artırır, saf JSON döner.
 
-        // 2. Excel Sütunlarını Tanımla
-        // header: Excel'de görünecek isim, key: Veritabanındaki alan adı
         let columns = [
             { header: 'Email', key: 'email', width: 30 },
             { header: 'First Name', key: 'first_name', width: 20 },
@@ -210,7 +304,6 @@ router.post('/export', auth.authenticate(), auth.checkPrivileges("user_view"), a
             { header: 'Created At', key: 'created_at', width: 25 }
         ];
 
-        // 3. Excel dosyasını oluştur ve gönder
         await Export.toExcel(columns, users, "Users_List", res);
 
     } catch (err) {
@@ -219,13 +312,32 @@ router.post('/export', auth.authenticate(), auth.checkPrivileges("user_view"), a
     }
 });
 
-/* POST Register - (Public Route - Genellikle kapalı olur veya ilk kurulum için açıktır) */
+/* POST Register */
 router.post('/register', validate(schemas.create), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Register first user (Initial setup)'
+        #swagger.description = 'Register the first super admin user. Only works if no users exist.'
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'User registration information',
+            required: true,
+            schema: {
+                email: 'admin@example.com',
+                password: 'AdminPass123',
+                first_name: 'Admin',
+                last_name: 'User',
+                phone_number: '+905551234567'
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'System initialized successfully'
+        }
+    */
     let body = req.body;
     let createdUser = null; 
 
     try {
-        // Sadece ilk kullanıcı için izin ver
         let userCheck = await Users.findOne({});
         if (userCheck) {
             return res.status(Enums.HTTP_CODES.NOT_FOUND).json(Response.errorResponse({ message: "Initial setup already completed." }));

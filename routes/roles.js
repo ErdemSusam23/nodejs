@@ -12,15 +12,25 @@ const AuditLogs = require('../lib/AuditLogs');
 
 const auth = require('../lib/auth')();
 const validate = require('../lib/validate');
-const schemas = require('./validations/Roles'); // Bu dosyayı oluşturduğundan emin ol
+const schemas = require('./validations/Roles');
 
-// 1. Tüm isteklerde Authentication (Token) kontrolü olsun
 router.all("*", auth.authenticate(), (req, res, next) => {
     next();
 });
 
-/* GET Roles - Listeleme */
+/* GET Roles */
 router.get('/', auth.checkPrivileges("role_view"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Roles']
+        #swagger.summary = 'Get all roles'
+        #swagger.description = 'Retrieve a list of all roles in the system'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.responses[200] = {
+            description: 'Roles retrieved successfully'
+        }
+    */
     try {
         let roles = await Roles.find({});
         res.json(Response.successResponse(roles));
@@ -30,26 +40,50 @@ router.get('/', auth.checkPrivileges("role_view"), async function(req, res, next
     }
 });
 
-/* GET Privileges - Sistemdeki Tüm Yetkileri Listele (Frontend'de Checkbox'ları çizmek için) */
+/* GET Privileges */
 router.get('/permissions', async function(req, res, next) {
+    /*
+        #swagger.tags = ['Roles']
+        #swagger.summary = 'Get all available permissions'
+        #swagger.description = 'Retrieve all system permissions for role assignment'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.responses[200] = {
+            description: 'Permissions retrieved successfully'
+        }
+    */
     res.json(Response.successResponse(role_privileges));
 });
 
-/* GET Role Privileges - Bir Role Ait Yetkileri Listele */
+/* GET Role Privileges */
 router.get('/role_privileges', auth.authenticate(), auth.checkPrivileges("role_view"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Roles']
+        #swagger.summary = 'Get privileges for a specific role'
+        #swagger.description = 'Retrieve all privileges assigned to a role'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['role_id'] = {
+            in: 'query',
+            description: 'Role ID',
+            required: true,
+            type: 'string',
+            example: '507f1f77bcf86cd799439012'
+        }
+        #swagger.responses[200] = {
+            description: 'Role privileges retrieved successfully'
+        }
+    */
     try {
-        // GET isteklerinde veriler req.body değil, req.query içindedir
         let body = req.query; 
 
         if (!body.role_id) {
             throw new CustomError(Enums.HTTP_CODES.BAD_REQUEST, 'Validation Error', 'role_id field is required');
         }
 
-        // RolePrivileges tablosundan bu role ait kayıtları çek
         let privileges = await RolePrivileges.find({ role_id: body.role_id });
-
-        // İPUCU: Frontend geliştirici sadece permission stringlerini (örn: ["user_add", "role_view"]) 
-        // istiyorsa, veriyi mapleyip de dönebilirsin. Şimdilik obje dönüyoruz.
         res.json(Response.successResponse(privileges));
 
     } catch (err) {
@@ -58,11 +92,31 @@ router.get('/role_privileges', auth.authenticate(), auth.checkPrivileges("role_v
     }
 });
 
-/* POST Add Role - Ekleme */
+/* POST Add Role */
 router.post('/add', auth.checkPrivileges("role_add"), validate(schemas.create), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Roles']
+        #swagger.summary = 'Add a new role'
+        #swagger.description = 'Create a new role with permissions'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Role information',
+            required: true,
+            schema: {
+                role_name: 'Admin',
+                is_active: true,
+                permissions: ['user_view', 'user_add', 'user_update', 'user_delete']
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Role created successfully'
+        }
+    */
     let body = req.body;
     try {
-        // Mükerrer Rol İsmi Kontrolü
         let existingRole = await Roles.findOne({ role_name: body.role_name });
         if (existingRole) {
             throw new CustomError(Enums.HTTP_CODES.CONFLICT, req.t('COMMON.ALREADY_EXIST'), req.t('COMMON.ALREADY_EXIST'));
@@ -76,7 +130,6 @@ router.post('/add', auth.checkPrivileges("role_add"), validate(schemas.create), 
 
         await role.save();
 
-        // Rol Yetkilerini Ekleme
         if (body.permissions && Array.isArray(body.permissions)) {
             for (let permission of body.permissions) {
                 let priv = new RolePrivileges({
@@ -98,15 +151,36 @@ router.post('/add', auth.checkPrivileges("role_add"), validate(schemas.create), 
     }
 });
 
-/* POST Update Role - Güncelleme */
+/* POST Update Role */
 router.post('/update', auth.checkPrivileges("role_update"), validate(schemas.update), async (req, res) => {
+    /*
+        #swagger.tags = ['Roles']
+        #swagger.summary = 'Update an existing role'
+        #swagger.description = 'Update role information and permissions'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Role update information',
+            required: true,
+            schema: {
+                _id: '507f1f77bcf86cd799439012',
+                role_name: 'Super Admin',
+                is_active: true,
+                permissions: ['user_view', 'user_add', 'user_update', 'user_delete']
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Role updated successfully'
+        }
+    */
     const body = req.body;
     try {
         let updates = {};
         if (body.role_name) updates.role_name = body.role_name;
         if (typeof body.is_active === "boolean") updates.is_active = body.is_active;
 
-        // Mükerrer İsim Kontrolü (Kendisi hariç)
         if (body.role_name) {
              let existingRole = await Roles.findOne({ role_name: body.role_name, _id: { $ne: body._id } });
              if (existingRole) {
@@ -116,7 +190,6 @@ router.post('/update', auth.checkPrivileges("role_update"), validate(schemas.upd
 
         await Roles.updateOne({ _id: body._id }, { $set: updates });
 
-        // Yetkileri Güncelle (Sync: Sil ve Yeniden Ekle)
         if (body.permissions && Array.isArray(body.permissions)) {
             await RolePrivileges.deleteMany({ role_id: body._id }); 
             for (let permission of body.permissions) {
@@ -138,11 +211,29 @@ router.post('/update', auth.checkPrivileges("role_update"), validate(schemas.upd
     }
 });
 
-/* POST Delete Role - Silme */
+/* POST Delete Role */
 router.post('/delete', auth.checkPrivileges("role_delete"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Roles']
+        #swagger.summary = 'Delete a role'
+        #swagger.description = 'Delete a role and its associated privileges'
+        #swagger.security = [{
+            "bearerAuth": []
+        }]
+        #swagger.parameters['body'] = {
+            in: 'body',
+            description: 'Role ID to delete',
+            required: true,
+            schema: {
+                _id: '507f1f77bcf86cd799439012'
+            }
+        }
+        #swagger.responses[200] = {
+            description: 'Role deleted successfully'
+        }
+    */
     let body = req.body;
     try {
-        // Validate Middleware kullanmadık (sadece ID lazım), manuel kontrol veya basit Joi şeması kullanılabilir.
         if (!body._id) throw new CustomError(Enums.HTTP_CODES.BAD_REQUEST, 'Validation Error', '_id field is required');
 
         await Roles.deleteOne({ _id: body._id });
@@ -157,6 +248,5 @@ router.post('/delete', auth.checkPrivileges("role_delete"), async function(req, 
         res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);
     }
 });
-
 
 module.exports = router;

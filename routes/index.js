@@ -1,15 +1,11 @@
 var express = require('express');
 var router = express.Router();
-const fs = require('fs');
 
-let routes = fs.readdirSync(__dirname);
-
-for (let route of routes) {
-  if (route.includes('.js') && route !== 'index.js') {
-    let routeName = route.replace('.js', '');
-    
-    router.use('/' + routeName, require('./' + route));
-  }
-}
+router.use('/users', require('./users'));
+router.use('/roles', require('./roles'));
+router.use('/categories', require('./categories'));
+router.use('/auditlogs', require('./auditlogs'));
+router.use('/routes', require('./routes'));  // upload
+router.use('/email', require('./email'));
 
 module.exports = router;

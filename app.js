@@ -8,6 +8,12 @@ var logger = require('morgan');
 const config = require('./config');
 const Response = require('./lib/Response')
 const I18n = require('./lib/I18n');
+const swaggerJSDoc = require("swagger-jsdoc");
+const swaggerUI = require('swagger-ui-express');
+
+const swaggerSpec = swaggerJSDoc(config.SWAGGER);
+
+const swaggerDoc = require('./swagger_output.json');
 
 var app = express();
 
@@ -21,22 +27,24 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 1. ÖNCE DİL AYARLARI (req.t her yerde olsun)
 app.use((req, res, next) => {
-    // Header'dan dili al, yoksa config'deki default'u kullan
-    // Postman'de header key: "Accept-Language", value: "TR" veya "EN" olacak
     let lang = req.headers['accept-language'] || config.DEFAULT_LANG; 
-    
-    // Sınıfın yeni bir örneğini oluştur
     const i18n = new I18n(lang);
-    
-    // req objesine translate fonksiyonunu yapıştır. Artık her yerden erişilebilir.
     req.t = (key, params) => i18n.translate(key, lang, params);
-    
     next();
 });
 
-// Dinamik routing 
+// 2. SONRA SWAGGER (Adresi /api-docs olarak düzelttim)
+app.use('/api/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+// 3. SONRA API ROTALARI
 app.use('/api', require('./routes/index'));
+
+// 4. ANA SAYFA YÖNLENDİRMESİ
+app.get('/', (req, res) => {
+    res.redirect('/api/docs'); 
+});
 
 // 404 Yakalayıcı
 app.use(function(req, res, next) {
@@ -46,7 +54,7 @@ app.use(function(req, res, next) {
 // HATA YAKALAYICI (Error Handler)
 app.use(function(err, req, res, next) {
   const errorResponse = Response.errorResponse(err);
-  console.error("APP ERROR:", err);
+  // console.error("APP ERROR:", err); // İstersen açabilirsin
   res.status(errorResponse.code).json(errorResponse);
 });
 

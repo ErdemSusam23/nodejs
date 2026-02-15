@@ -11,5 +11,47 @@ module.exports = {
         "MIMETYPES": ["image/jpeg", "image/png", "image/jpg"], // Sadece resimlere izin verelim
         "MAX_SIZE": 5 * 1024 * 1024, // 5 MB
         "PATH": "public/uploads" // Dosyaların kaydedileceği yer
+    },
+    "EMAIL": {
+        "HOST": "smtp.ethereal.email",
+        "PORT": 587,
+        "SECURE": false, // true for 465, false for other ports
+        "auth": {
+            "user": "", 
+            "pass": ""         
+        },
+        "FROM": "noreply@superbackend.com"
+    },
+    "SWAGGER": {
+        "definition": {
+            "openapi": "3.0.0",
+            "info": {
+                "title": "Node.js Backend API",
+                "version": "0.0.0",
+                "description": "Node.js Backend API Documentation"
+            },
+            "servers": [
+                {
+                    "url": "http://localhost:3000/api/"
+                }
+            ],
+            // JWT Auth 
+            "components": {
+                "securitySchemes": {
+                    "bearerAuth": {
+                        "type": "http",
+                        "scheme": "bearer",
+                        "bearerFormat": "JWT"
+                    }
+                }
+            },
+            "security": [
+                {
+                    "bearerAuth": []
+                }
+            ]
+        },
+        // Hangi dosyalarda doküman arayayım?
+        "apis": ["./routes/*.js"] 
     }
 };

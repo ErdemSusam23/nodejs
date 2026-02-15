@@ -5,6 +5,12 @@ const AuditLogs = require('../db/models/AuditLogs');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
+    /*
+        #swagger.tags = [AuditLogs]
+        #sawgger.summary = 'Get Logs'
+        #swagger.description = 'Loglari listeler'
+        #swagger.path = '/auditlogs/add'
+    */
     try {
         let body = req.body;
         let query = {};

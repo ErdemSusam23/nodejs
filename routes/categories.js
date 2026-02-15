@@ -16,6 +16,12 @@ router.all("*", auth.authenticate(), (req, res, next) => {
 
 /* GET Categories - Listeleme */
 router.get('/', auth.checkPrivileges("category_view"), async function(req, res, next) {
+    /*
+        #swagger.tags = [Categories]
+        #sawgger.summary = 'Get Categories'
+        #swagger.description = 'Category listeler'
+        #swagger.path = '/categories/'
+    */
     try {
         let categories = await Categories.find({});
         res.json(Response.successResponse(categories));

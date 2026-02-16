@@ -24,12 +24,27 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /**
- * Listen on provided port, on all network interfaces.
+ * Connect to MongoDB BEFORE starting server
  */
+async function startServer() {
+  try {
+    // 1. Önce MongoDB'ye bağlan
+    console.log('Connecting to MongoDB...', config.CONNECTION_STRING);
+    await new Database().connect(config.CONNECTION_STRING);
+    console.log('MongoDB Connected! ✅');
+    
+    // 2. Bağlantı başarılı olunca server'ı başlat
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
+  } catch (error) {
+    console.error('❌ MongoDB bağlantısı başarısız:', error);
+    process.exit(1);
+  }
+}
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+// Server'ı başlat
+startServer();
 
 /**
  * Normalize a port into a number, string, or false.
@@ -89,6 +104,5 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
-
-  new Database().connect(config.CONNECTION_STRING)
+  console.log('Server listening on ' + bind);
 }

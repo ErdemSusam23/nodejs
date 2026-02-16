@@ -17,16 +17,21 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+    logging:
+      driver: "none"
 
   app-test:
     build: .
     container_name: nodejs-app-test
+    env_file:
+      - .env.test
     environment:
       - NODE_ENV=test
       - CONNECTION_STRING=mongodb://mongodb-test:27017/nodejs_test
       - LOG_LEVEL=off
       - JWT_SECRET=test_secret_key_for_testing
       - JWT_EXPIRE_TIME=1h
+    restart: "on-failure"
     depends_on:
       mongodb-test:
         condition: service_healthy

@@ -5,7 +5,8 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'off';
 
-// Console.log'ları sustur (opsiyonel)
+// Console.log'ları sustur
+
 global.console = {
   ...console,
   log: jest.fn(),

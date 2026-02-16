@@ -8,12 +8,48 @@ var logger = require('morgan');
 const config = require('./config');
 const Response = require('./lib/Response')
 const I18n = require('./lib/I18n');
+const Database = require('./db/Database');
 
 //Swagger
 const swaggerUi = require('swagger-ui-express');
 const swaggerDoc = require('./swagger_output.json');
 
+//Security Imports
+const helmet = require('helmet');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const mongoSanitize = require('express-mongo-sanitize');
+
+new Database().connect(config.CONNECTION_STRING);
+
 var app = express();
+
+// 1. Helmet: HTTP Başlık güvenliği
+app.use(helmet());
+
+// 2. CORS: Sadece izin verilen domainler erişsin
+app.use(cors({
+    origin: config.HTTP.CORS.ORIGIN,
+    methods: config.HTTP.CORS.METHODS
+}));
+
+// 3. Rate Limit: DDoS ve Brute-Force koruması
+const limiter = rateLimit({
+    windowMs: config.HTTP.RATE_LIMIT.WINDOW_MS,
+    max: config.HTTP.RATE_LIMIT.MAX,
+    message: {
+        code: 429,
+        error: { message: "Too many requests, please try again later." }
+    }
+});
+app.use('/api', limiter); // Sadece /api rotalarına limit koyuyoruz
+
+// 4. Mongo Sanitize: NoSQL Injection koruması
+app.use(mongoSanitize());
+
+// 5. HPP: Parametre kirliliği koruması
+app.use(hpp());
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));

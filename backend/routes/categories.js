@@ -27,8 +27,25 @@ router.get('/', auth.checkPrivileges("category_view"), async function(req, res, 
         }
     */
     try {
-        let categories = await Categories.find({});
-        res.json(Response.successResponse(categories));
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const total = await Categories.countDocuments();
+
+        let categories = await Categories.find({})
+            .skip(skip)
+            .limit(limit);
+
+        res.json(Response.successResponse({
+            data: categories,
+            pagination: {
+                total: total,
+                page: page,
+                limit: limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        }));
     } catch (err) {
         let errorResponse = Response.errorResponse(err);
         res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);

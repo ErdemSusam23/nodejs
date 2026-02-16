@@ -63,7 +63,7 @@ module.exports = {
         },
         "RATE_LIMIT": {
             "WINDOW_MS": 15 * 60 * 1000, // 15 Dakika
-            "MAX": 100 // 15 dakikada max 100 istek (IP başına)
+            "MAX": 5000 // 15 dakikada max 100 istek (IP başına)
         }
     }
 };

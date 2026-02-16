@@ -32,8 +32,25 @@ router.get('/', auth.checkPrivileges("role_view"), async function(req, res, next
         }
     */
     try {
-        let roles = await Roles.find({});
-        res.json(Response.successResponse(roles));
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const total = await Roles.countDocuments();
+
+        let roles = await Roles.find({})
+            .skip(skip)
+            .limit(limit);
+
+        res.json(Response.successResponse({
+            data: roles,
+            pagination: {
+                total: total,
+                page: page,
+                limit: limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        }));
     } catch (err) {
         let errorResponse = Response.errorResponse(err);
         res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);

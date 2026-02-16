@@ -32,6 +32,13 @@ router.get('/', auth.authenticate(), auth.checkPrivileges("user_view"), async fu
         }
     */
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        // Toplam kullanıcı sayısını al
+        const total = await Users.countDocuments();
+
         let users = await Users.aggregate([
             {
                 $lookup: {
@@ -55,10 +62,24 @@ router.get('/', auth.authenticate(), auth.checkPrivileges("user_view"), async fu
                     user_roles: 0,
                     __v: 0
                 }
+            },
+            {
+                $skip: skip
+            },
+            {
+                $limit: limit
             }
         ]);
 
-        res.json(Response.successResponse(users));
+        res.json(Response.successResponse({
+            data: users,
+            pagination: {
+                total: total,
+                page: page,
+                limit: limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        }));
     } catch (err) {
         let errorResponse = Response.errorResponse(err);
         res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);

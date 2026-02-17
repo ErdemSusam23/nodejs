@@ -70,7 +70,14 @@ app.use((req, res, next) => {
 });
 
 // 2. SONRA SWAGGER (Adresi /api-docs olarak düzelttim)
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+app.use('/api/docs', swaggerUi.serve, (req, res, next) => {
+  const dynamicDoc = {
+    ...swaggerDoc,
+    host: req.headers.host,
+    schemes: (req.secure || req.headers['x-forwarded-proto'] === 'https') ? ['https'] : ['http']
+  };
+  swaggerUi.setup(dynamicDoc)(req, res, next);
+});
 
 // 3. SONRA API ROTALARI
 app.use('/api', require('./routes/index'));

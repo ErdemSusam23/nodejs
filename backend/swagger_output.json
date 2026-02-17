@@ -6,7 +6,7 @@
     "version": "1.0.0"
   },
   "host": "localhost:3000",
-  "basePath": "/api",
+  "basePath": "",
   "tags": [
     {
       "name": "Users",
@@ -42,7 +42,7 @@
       "type": "apiKey",
       "in": "header",
       "name": "Authorization",
-      "description": "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
+      "description": "JWT Authorization header. Example: \"Bearer {token}\""
     }
   },
   "consumes": [
@@ -81,11 +81,61 @@
             "name": "accept-language",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "first_name",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "last_name",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "example": 10
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "type": "string",
+            "example": "user@example.com"
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "type": "boolean",
+            "example": true
           }
         ],
         "responses": {
           "200": {
-            "description": "Users retrieved successfully"
+            "description": "Users retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/UserListResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -101,7 +151,7 @@
           "Users"
         ],
         "summary": "Add a new user",
-        "description": "Create a new user account (Admin only)",
+        "description": "Create a new user account",
         "parameters": [
           {
             "name": "accept-language",
@@ -109,49 +159,36 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
-            "description": "User information",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "example": "newuser@example.com"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "SecurePass123"
-                },
-                "first_name": {
-                  "type": "string",
-                  "example": "John"
-                },
-                "last_name": {
-                  "type": "string",
-                  "example": "Doe"
-                },
-                "phone_number": {
-                  "type": "string",
-                  "example": "+905551234567"
-                },
-                "roles": {
-                  "type": "array",
-                  "example": [
-                    "507f1f77bcf86cd799439012"
-                  ],
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
+              "$ref": "#/definitions/CreateUserRequest"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "User created successfully"
+            "description": "User created successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Email already exists"
           }
         },
         "security": [
@@ -175,53 +212,33 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
-            "description": "User update information",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "_id": {
-                  "type": "string",
-                  "example": "507f1f77bcf86cd799439011"
-                },
-                "first_name": {
-                  "type": "string",
-                  "example": "John"
-                },
-                "last_name": {
-                  "type": "string",
-                  "example": "Doe"
-                },
-                "phone_number": {
-                  "type": "string",
-                  "example": "+905551234567"
-                },
-                "is_active": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "password": {
-                  "type": "string",
-                  "example": "NewPassword123"
-                },
-                "roles": {
-                  "type": "array",
-                  "example": [
-                    "507f1f77bcf86cd799439012"
-                  ],
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
+              "$ref": "#/definitions/UpdateUserRequest"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "User updated successfully"
+            "description": "User updated successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -245,24 +262,33 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
-            "description": "User ID to delete",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "_id": {
-                  "type": "string",
-                  "example": "507f1f77bcf86cd799439011"
-                }
-              }
+              "$ref": "#/definitions/DeleteRequest"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "User deleted successfully"
+            "description": "User deleted successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -286,28 +312,33 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
-            "description": "Login credentials",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "example": "user@example.com"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "password123"
-                }
-              }
+              "$ref": "#/definitions/LoginRequest"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Login successful"
+            "description": "Login successful",
+            "schema": {
+              "$ref": "#/definitions/LoginResponse"
+            }
+          },
+          "401": {
+            "description": "Invalid email or password"
           }
         }
       }
@@ -324,11 +355,24 @@
             "name": "accept-language",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "Excel file download"
+            "description": "Excel file downloaded"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -343,8 +387,8 @@
         "tags": [
           "Users"
         ],
-        "summary": "Register first user (Initial setup)",
-        "description": "Register the first super admin user. Only works if no users exist.",
+        "summary": "Initial system setup",
+        "description": "Create the first admin user. Only works on empty database.",
         "parameters": [
           {
             "name": "accept-language",
@@ -352,40 +396,30 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
-            "description": "User registration information",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "example": "admin@example.com"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "AdminPass123"
-                },
-                "first_name": {
-                  "type": "string",
-                  "example": "Admin"
-                },
-                "last_name": {
-                  "type": "string",
-                  "example": "User"
-                },
-                "phone_number": {
-                  "type": "string",
-                  "example": "+905551234567"
-                }
-              }
+              "$ref": "#/definitions/CreateUserRequest"
             }
           }
         ],
         "responses": {
           "200": {
             "description": "System initialized successfully"
+          },
+          "404": {
+            "description": "Setup already completed"
           }
         }
       }
@@ -401,6 +435,26 @@
           {
             "name": "accept-language",
             "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
             "type": "string"
           }
         ],
@@ -428,6 +482,16 @@
             "name": "accept-language",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -452,6 +516,16 @@
         "parameters": [
           {
             "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
             "in": "header",
             "type": "string"
           },
@@ -486,6 +560,16 @@
         "parameters": [
           {
             "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
             "in": "header",
             "type": "string"
           },
@@ -543,6 +627,16 @@
         "parameters": [
           {
             "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
             "in": "header",
             "type": "string"
           },
@@ -608,6 +702,16 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Role ID to delete",
@@ -647,6 +751,26 @@
             "name": "accept-language",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -671,6 +795,16 @@
         "parameters": [
           {
             "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
             "in": "header",
             "type": "string"
           },
@@ -716,6 +850,16 @@
         "parameters": [
           {
             "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
             "in": "header",
             "type": "string"
           },
@@ -769,6 +913,16 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Category ID to delete",
@@ -798,11 +952,7 @@
     },
     "/api/auditlogs/": {
       "post": {
-        "tags": [
-          "AuditLogs"
-        ],
-        "summary": "Get audit logs",
-        "description": "Retrieve audit logs with optional date range filtering and pagination",
+        "description": "",
         "parameters": [
           {
             "name": "accept-language",
@@ -810,28 +960,41 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
-            "description": "Audit log query parameters",
-            "required": false,
             "schema": {
               "type": "object",
               "properties": {
-                "begin_date": {
-                  "type": "string",
-                  "example": "2024-01-01"
-                },
-                "end_date": {
-                  "type": "string",
-                  "example": "2024-12-31"
-                },
-                "skip": {
-                  "type": "number",
-                  "example": 0
+                "page": {
+                  "example": "any"
                 },
                 "limit": {
-                  "type": "number",
-                  "example": 100
+                  "example": "any"
+                },
+                "begin_date": {
+                  "example": "any"
+                },
+                "end_date": {
+                  "example": "any"
+                },
+                "action": {
+                  "example": "any"
+                },
+                "resource": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
                 }
               }
             }
@@ -839,7 +1002,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Audit logs retrieved successfully"
+            "description": "OK"
           },
           "500": {
             "description": "Internal Server Error"
@@ -860,6 +1023,16 @@
         "parameters": [
           {
             "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
             "in": "header",
             "type": "string"
           },
@@ -897,6 +1070,16 @@
             "type": "string"
           },
           {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "Email test parameters",
@@ -926,12 +1109,181 @@
           }
         }
       }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Get current user",
+        "description": "Retrieve the current authenticated user information",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information retrieved successfully"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout",
+        "description": "Logout the current user",
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-forwarded-proto",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logged out successfully"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     }
   },
   "definitions": {
-    "User": {
+    "ApiResponse": {
       "type": "object",
       "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 400
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "example": "Error message"
+            },
+            "description": {
+              "type": "string",
+              "example": "Error description"
+            }
+          }
+        }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "admin@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        }
+      }
+    },
+    "LoginResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            },
+            "user": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "507f1f77bcf86cd799439011"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "admin@example.com"
+                },
+                "first_name": {
+                  "type": "string",
+                  "example": "Admin"
+                },
+                "last_name": {
+                  "type": "string",
+                  "example": "User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "UserObject": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011"
+        },
         "email": {
           "type": "string",
           "example": "user@example.com"
@@ -954,9 +1306,144 @@
         },
         "roles": {
           "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439012"
+              },
+              "role_name": {
+                "type": "string",
+                "example": "Admin"
+              },
+              "is_active": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "example": "2024-01-01T00:00:00.000Z"
+        },
+        "updated_at": {
+          "type": "string",
+          "example": "2024-01-01T00:00:00.000Z"
+        }
+      }
+    },
+    "UserListResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "_id": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439011"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "507f1f77bcf86cd799439012"
+                        },
+                        "role_name": {
+                          "type": "string",
+                          "example": "Admin"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number",
+                  "example": 1
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "limit": {
+                  "type": "number",
+                  "example": 10
+                },
+                "totalPages": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "CreateUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "newuser@example.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "SecurePass123"
+        },
+        "first_name": {
+          "type": "string",
+          "example": "John"
+        },
+        "last_name": {
+          "type": "string",
+          "example": "Doe"
+        },
+        "phone_number": {
+          "type": "string",
+          "example": "+905551234567"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "roles": {
+          "type": "array",
           "example": [
-            "role_id_1",
-            "role_id_2"
+            "507f1f77bcf86cd799439012"
           ],
           "items": {
             "type": "string"
@@ -964,12 +1451,181 @@
         }
       }
     },
-    "Role": {
+    "UpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011"
+        },
+        "first_name": {
+          "type": "string",
+          "example": "John"
+        },
+        "last_name": {
+          "type": "string",
+          "example": "Doe"
+        },
+        "phone_number": {
+          "type": "string",
+          "example": "+905551234567"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "password": {
+          "type": "string",
+          "example": "NewPassword123"
+        },
+        "roles": {
+          "type": "array",
+          "example": [
+            "507f1f77bcf86cd799439012"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "DeleteRequest": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011"
+        }
+      }
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        }
+      }
+    },
+    "RoleObject": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439012"
+        },
+        "role_name": {
+          "type": "string",
+          "example": "Admin"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "created_at": {
+          "type": "string",
+          "example": "2024-01-01T00:00:00.000Z"
+        }
+      }
+    },
+    "RoleListResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "_id": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439012"
+                  },
+                  "role_name": {
+                    "type": "string",
+                    "example": "Admin"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number",
+                  "example": 1
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "limit": {
+                  "type": "number",
+                  "example": 10
+                },
+                "totalPages": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "CreateRoleRequest": {
       "type": "object",
       "properties": {
         "role_name": {
           "type": "string",
-          "example": "Admin"
+          "example": "Editor"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "permissions": {
+          "type": "array",
+          "example": [
+            "user_view",
+            "category_view",
+            "category_add"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "UpdateRoleRequest": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439012"
+        },
+        "role_name": {
+          "type": "string",
+          "example": "Super Editor"
         },
         "is_active": {
           "type": "boolean",
@@ -980,8 +1636,7 @@
           "example": [
             "user_view",
             "user_add",
-            "user_update",
-            "user_delete"
+            "category_view"
           ],
           "items": {
             "type": "string"
@@ -989,7 +1644,146 @@
         }
       }
     },
-    "Category": {
+    "RolePrivilegesResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439021"
+              },
+              "role_id": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439012"
+              },
+              "permission": {
+                "type": "string",
+                "example": "category_view"
+              }
+            }
+          }
+        }
+      }
+    },
+    "SystemPermissionsResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "privileges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "category_delete"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Delete Category"
+                  },
+                  "group": {
+                    "type": "string",
+                    "example": "Categories"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "CategoryObject": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439014"
+        },
+        "name": {
+          "type": "string",
+          "example": "Electronics"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
+        },
+        "created_at": {
+          "type": "string",
+          "example": "2024-01-01T00:00:00.000Z"
+        }
+      }
+    },
+    "CategoryListResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "_id": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439014"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Electronics"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number",
+                  "example": 1
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "limit": {
+                  "type": "number",
+                  "example": 10
+                },
+                "totalPages": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "CreateCategoryRequest": {
       "type": "object",
       "properties": {
         "name": {
@@ -1002,73 +1796,158 @@
         }
       }
     },
-    "Login": {
+    "UpdateCategoryRequest": {
       "type": "object",
       "properties": {
-        "email": {
+        "_id": {
           "type": "string",
-          "example": "user@example.com"
+          "example": "507f1f77bcf86cd799439014"
         },
-        "password": {
+        "name": {
           "type": "string",
-          "example": "password123"
+          "example": "Home Electronics"
+        },
+        "is_active": {
+          "type": "boolean",
+          "example": true
         }
       }
     },
-    "LoginResponse": {
+    "AuditLogObject": {
       "type": "object",
       "properties": {
-        "token": {
+        "_id": {
           "type": "string",
-          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          "example": "507f1f77bcf86cd799439030"
         },
-        "user": {
+        "email": {
+          "type": "string",
+          "example": "admin@example.com"
+        },
+        "location": {
+          "type": "string",
+          "example": "Users"
+        },
+        "proc_type": {
+          "type": "string",
+          "example": "Add"
+        },
+        "log": {
           "type": "object",
           "properties": {
-            "id": {
+            "_id": {
               "type": "string",
               "example": "507f1f77bcf86cd799439011"
             },
             "email": {
               "type": "string",
-              "example": "user@example.com"
-            },
-            "first_name": {
-              "type": "string",
-              "example": "John"
-            },
-            "last_name": {
-              "type": "string",
-              "example": "Doe"
+              "example": "newuser@example.com"
             }
           }
+        },
+        "created_at": {
+          "type": "string",
+          "example": "2024-01-01T00:00:00.000Z"
         }
       }
     },
-    "Error": {
+    "AuditLogListResponse": {
       "type": "object",
       "properties": {
-        "error": {
+        "code": {
+          "type": "number",
+          "example": 200
+        },
+        "data": {
           "type": "object",
           "properties": {
-            "message": {
-              "type": "string",
-              "example": "Error message"
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "_id": {
+                    "type": "string",
+                    "example": "507f1f77bcf86cd799439030"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "admin@example.com"
+                  },
+                  "location": {
+                    "type": "string",
+                    "example": "Users"
+                  },
+                  "proc_type": {
+                    "type": "string",
+                    "example": "Login"
+                  },
+                  "log": {
+                    "type": "object",
+                    "properties": {}
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00.000Z"
+                  }
+                }
+              }
             },
-            "description": {
-              "type": "string",
-              "example": "Error description"
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number",
+                  "example": 1
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "limit": {
+                  "type": "number",
+                  "example": 20
+                },
+                "totalPages": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
             }
           }
         }
       }
     },
-    "Success": {
+    "AuditLogRequest": {
       "type": "object",
       "properties": {
-        "success": {
-          "type": "boolean",
-          "example": true
+        "begin_date": {
+          "type": "string",
+          "example": "2024-01-01"
+        },
+        "end_date": {
+          "type": "string",
+          "example": "2024-12-31"
+        },
+        "page": {
+          "type": "number",
+          "example": 1
+        },
+        "limit": {
+          "type": "number",
+          "example": 20
+        },
+        "action": {
+          "type": "string",
+          "example": "Login"
+        },
+        "resource": {
+          "type": "string",
+          "example": "Users"
+        },
+        "email": {
+          "type": "string",
+          "example": "admin@example.com"
         }
       }
     }

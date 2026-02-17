@@ -20,6 +20,18 @@ const schemas = require('./validations/Users');
 
 /* GET Users Listing - Listeleme ve Filtreleme */
 router.get('/', auth.authenticate(), auth.checkPrivileges("user_view"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Get all users'
+        #swagger.description = 'Retrieve a list of all users with their roles'
+        #swagger.security = [{ "bearerAuth": [] }]
+        #swagger.parameters['page']  = { in: 'query', type: 'integer', example: 1 }
+        #swagger.parameters['limit'] = { in: 'query', type: 'integer', example: 10 }
+        #swagger.parameters['email'] = { in: 'query', type: 'string', example: 'user@example.com' }
+        #swagger.parameters['is_active'] = { in: 'query', type: 'boolean', example: true }
+        #swagger.responses[200] = { description: 'Users retrieved successfully', schema: { $ref: '#/definitions/UserListResponse' } }
+        #swagger.responses[401] = { description: 'Unauthorized' }
+    */
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -94,6 +106,19 @@ router.get('/', auth.authenticate(), auth.checkPrivileges("user_view"), async fu
 
 /* POST Add User - Yeni Kullanıcı Ekleme */
 router.post('/add', auth.authenticate(), auth.checkPrivileges("user_add"), validate(schemas.create), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Add a new user'
+        #swagger.description = 'Create a new user account'
+        #swagger.security = [{ "bearerAuth": [] }]
+        #swagger.parameters['body'] = {
+            in: 'body', required: true,
+            schema: { $ref: '#/definitions/CreateUserRequest' }
+        }
+        #swagger.responses[200] = { description: 'User created successfully', schema: { $ref: '#/definitions/SuccessResponse' } }
+        #swagger.responses[401] = { description: 'Unauthorized' }
+        #swagger.responses[409] = { description: 'Email already exists' }
+    */
     let body = req.body;
     try {
         let existingUser = await Users.findOne({ email: body.email });
@@ -137,6 +162,18 @@ router.post('/add', auth.authenticate(), auth.checkPrivileges("user_add"), valid
 
 /* POST Update User */
 router.post('/update', auth.authenticate(), auth.checkPrivileges("user_update"), validate(schemas.update), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Update an existing user'
+        #swagger.description = 'Update user information and roles'
+        #swagger.security = [{ "bearerAuth": [] }]
+        #swagger.parameters['body'] = {
+            in: 'body', required: true,
+            schema: { $ref: '#/definitions/UpdateUserRequest' }
+        }
+        #swagger.responses[200] = { description: 'User updated successfully', schema: { $ref: '#/definitions/SuccessResponse' } }
+        #swagger.responses[401] = { description: 'Unauthorized' }
+    */
     let body = req.body;
     try {
         let updates = {};
@@ -171,6 +208,18 @@ router.post('/update', auth.authenticate(), auth.checkPrivileges("user_update"),
 
 /* POST Delete User */
 router.post('/delete', auth.authenticate(), auth.checkPrivileges("user_delete"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Delete a user'
+        #swagger.description = 'Delete a user and their role associations'
+        #swagger.security = [{ "bearerAuth": [] }]
+        #swagger.parameters['body'] = {
+            in: 'body', required: true,
+            schema: { $ref: '#/definitions/DeleteRequest' }
+        }
+        #swagger.responses[200] = { description: 'User deleted successfully', schema: { $ref: '#/definitions/SuccessResponse' } }
+        #swagger.responses[401] = { description: 'Unauthorized' }
+    */
     let body = req.body;
     try {
         if (!body._id) throw new CustomError(Enums.HTTP_CODES.BAD_REQUEST, 'Validation Error', '_id is required');
@@ -190,6 +239,17 @@ router.post('/delete', auth.authenticate(), auth.checkPrivileges("user_delete"),
 
 /* POST Login */
 router.post('/login', validate(schemas.login), async (req, res) => {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'User login'
+        #swagger.description = 'Authenticate user and receive JWT token'
+        #swagger.parameters['body'] = {
+            in: 'body', required: true,
+            schema: { $ref: '#/definitions/LoginRequest' }
+        }
+        #swagger.responses[200] = { description: 'Login successful', schema: { $ref: '#/definitions/LoginResponse' } }
+        #swagger.responses[401] = { description: 'Invalid email or password' }
+    */
     try {
         const { email, password } = req.body;
 
@@ -227,6 +287,14 @@ router.post('/login', validate(schemas.login), async (req, res) => {
 
 /* POST Export Users */
 router.post('/export', auth.authenticate(), auth.checkPrivileges("user_view"), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Export users to Excel'
+        #swagger.description = 'Download all users as an Excel file'
+        #swagger.security = [{ "bearerAuth": [] }]
+        #swagger.responses[200] = { description: 'Excel file downloaded' }
+        #swagger.responses[401] = { description: 'Unauthorized' }
+    */
     try {
         let users = await Users.find({}, { password: 0, __v: 0 }).lean(); 
 
@@ -249,6 +317,17 @@ router.post('/export', auth.authenticate(), auth.checkPrivileges("user_view"), a
 
 /* POST Register */
 router.post('/register', validate(schemas.create), async function(req, res, next) {
+    /*
+        #swagger.tags = ['Users']
+        #swagger.summary = 'Initial system setup'
+        #swagger.description = 'Create the first admin user. Only works on empty database.'
+        #swagger.parameters['body'] = {
+            in: 'body', required: true,
+            schema: { $ref: '#/definitions/CreateUserRequest' }
+        }
+        #swagger.responses[200] = { description: 'System initialized successfully' }
+        #swagger.responses[404] = { description: 'Setup already completed' }
+    */
     let body = req.body;
     let createdUser = null; 
 

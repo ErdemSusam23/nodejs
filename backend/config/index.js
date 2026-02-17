@@ -58,7 +58,7 @@ module.exports = {
         "CORS": {
             // Frontend adresini buraya yazmalısın. "*" her yere izin verir (Geliştirme için).
             // Production'da: ["http://localhost:3000", "https://siteadi.com"]
-            "ORIGIN": "*", 
+            "ORIGIN": process.env.CORS_ORIGIN || "*", 
             "METHODS": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         },
         "RATE_LIMIT": {

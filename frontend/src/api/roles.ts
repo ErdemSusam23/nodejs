@@ -50,15 +50,14 @@ export const roleApi = {
   // Get ALL system permissions (Checkbox listesi için)
   getPermissions: async (): Promise<any> => {
     const { data } = await apiClient.get('/roles/permissions')
-    return data
+    return data.data  // ← wrapper soyuldu: { code, data: { privileges: [...] } } → { privileges: [...] }
   },
 
   // Get privileges for a SPECIFIC role (Edit işlemi için gerekli)
-  // BU FONKSİYON EKSİKTİ, EKLENDİ:
   getRolePrivileges: async (roleId: string): Promise<RolePrivilege[]> => {
     const { data } = await apiClient.get('/roles/role_privileges', {
       params: { role_id: roleId }
     })
-    return data
+    return data.data  // ← wrapper soyuldu: { code, data: [...] } → [...]
   }
 }

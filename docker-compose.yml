@@ -9,12 +9,10 @@ services:
     depends_on:
       - mongodb
     environment:
-      # DÜZELTME: MONGO_URL → CONNECTION_STRING (config/index.js ile eşleşiyor)
       - CONNECTION_STRING=mongodb://mongodb:27017/nodejs
       - JWT_SECRET=${JWT_SECRET:-default_secret_key}
     networks:
       - app-network
-    # volumes satırları production'da kaldırıldı (güvenlik + performans)
 
   mongodb:
     image: mongo:latest
@@ -28,17 +26,17 @@ services:
       - app-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # Build Time'da Vite'a gömülür (Run Time environment ile karıştırma)
+        # Local: http://localhost/api (nginx proxy üzerinden backend'e gider)
+        VITE_API_URL: ${VITE_API_URL:-http://localhost/api}
     container_name: react-frontend
     ports:
-      # DÜZELTME: nginx 80 portunda çalışıyor artık
       - "80:80"
     depends_on:
       - backend
-    environment:
-      # NOT: Bu değer BUILD sırasında gömülür, sonradan değiştirilemez
-      # Production deploy'da Vercel env variable kullanılacak
-      - VITE_API_URL=${VITE_API_URL:-nodejs-production-fb070.up.railway.app/api}
     networks:
       - app-network
 

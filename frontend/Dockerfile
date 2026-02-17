@@ -5,15 +5,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Önce sadece package dosyalarını kopyala (cache optimizasyonu)
 COPY package*.json ./
 
 RUN npm install
 
-# Kaynak kodları kopyala
 COPY . .
 
-# Production build al (tsc + vite build)
+# docker-compose'dan gelen ARG'ı yakala
+ARG VITE_API_URL
+# Vite build sırasında process.env üzerinden okuyabilmesi için ENV'e aktar
+ENV VITE_API_URL=$VITE_API_URL
+
+# Production build (tsc + vite build) — VITE_API_URL artık bundle'a gömülür
 RUN npm run build
 
 # =====================
@@ -21,7 +24,7 @@ RUN npm run build
 # =====================
 FROM nginx:alpine
 
-# Nginx için custom config (React Router için gerekli)
+# Nginx SPA config (React Router için)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Build çıktısını nginx'e kopyala

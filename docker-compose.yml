@@ -6,35 +6,39 @@ services:
     container_name: nodejs-backend
     ports:
       - "3000:3000"
-    volumes:
-      - ./backend:/app  
-      - /app/node_modules 
     depends_on:
       - mongodb
     environment:
-      - MONGO_URL=mongodb://mongodb:27017/nodejs
-
-    command: npm run dev
-
+      # DÜZELTME: MONGO_URL → CONNECTION_STRING (config/index.js ile eşleşiyor)
+      - CONNECTION_STRING=mongodb://mongodb:27017/nodejs
+      - JWT_SECRET=${JWT_SECRET:-default_secret_key}
+    networks:
+      - app-network
+    # volumes satırları production'da kaldırıldı (güvenlik + performans)
 
   mongodb:
     image: mongo:latest
+    container_name: mongodb
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
     command: ["mongod", "--quiet"]
+    networks:
+      - app-network
 
   frontend:
-    build: ./frontend 
+    build: ./frontend
     container_name: react-frontend
     ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      # DÜZELTME: nginx 80 portunda çalışıyor artık
+      - "80:80"
+    depends_on:
+      - backend
     environment:
-      - VITE_API_URL=http://localhost:3000/api 
+      # NOT: Bu değer BUILD sırasında gömülür, sonradan değiştirilemez
+      # Production deploy'da Vercel env variable kullanılacak
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3000/api}
     networks:
       - app-network
 

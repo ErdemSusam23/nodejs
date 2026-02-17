@@ -1,18 +1,32 @@
-FROM node:20-alpine
+# =====================
+# AŞAMA 1: Build
+# =====================
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Package files kopyala
+# Önce sadece package dosyalarını kopyala (cache optimizasyonu)
 COPY package*.json ./
 
-# Dependencies kur
 RUN npm install
 
 # Kaynak kodları kopyala
 COPY . .
 
-# Port
-EXPOSE 5173
+# Production build al (tsc + vite build)
+RUN npm run build
 
-# Development server başlat
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# =====================
+# AŞAMA 2: Serve
+# =====================
+FROM nginx:alpine
+
+# Nginx için custom config (React Router için gerekli)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Build çıktısını nginx'e kopyala
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

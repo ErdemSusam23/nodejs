@@ -31,7 +31,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, Search, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -66,7 +66,7 @@ const userSchema = z.object({
   first_name: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
   last_name: z.string().min(2, 'Soyad en az 2 karakter olmalıdır'),
   email: z.string().email('Geçerli bir email adresi giriniz'),
-  password: z.string().optional(), // Zorunluluk kontrolünü onSubmit'te yapıyoruz
+  password: z.string().optional(),
   roleId: z.string().min(1, 'Rol seçimi zorunludur'),
   isActive: z.boolean().default(true),
 })
@@ -171,19 +171,20 @@ export default function UsersPage() {
       first_name: data.first_name,
       last_name: data.last_name,
       email: data.email,
-      roles: [data.roleId]
+      roles: [data.roleId] // Backend array bekliyor
     }
 
+    // Şifre varsa ekle
     if (data.password && data.password.length >= 6) {
       submitData.password = data.password
     }
 
     if (editingUser) {
-      // DÜZELTME: Sadece güncelleme yaparken is_active gönderiyoruz
+      // Güncelleme işleminde is_active gönderiyoruz
       submitData.is_active = data.isActive; 
       updateMutation.mutate({ id: editingUser._id, data: submitData })
     } else {
-      // DÜZELTME: Yeni kayıtta is_active GÖNDERMİYORUZ (Backend default: true)
+      // Yeni kayıtta şifre zorunlu
       if (!data.password) {
         toast.error("Yeni kullanıcı için şifre zorunludur")
         return
@@ -198,11 +199,13 @@ export default function UsersPage() {
     setValue('first_name', user.first_name)
     setValue('last_name', user.last_name)
     setValue('email', user.email)
-    setValue('isActive', user.is_active)
+    setValue('isActive', user.is_active) // Backend is_active -> Form isActive
+    
+    // Rol seçimini ayarla (İlk rolü seçili yap)
     if (user.roles && user.roles.length > 0) {
       setValue('roleId', user.roles[0]._id) 
     }
-    setValue('password', '')
+    setValue('password', '') // Şifre alanını temizle
   }
 
   const handleCloseDialog = () => {
@@ -215,6 +218,7 @@ export default function UsersPage() {
     setSearchEmail('')
     setSearchName('')
     setFilterActive('')
+    setPage(1)
   }
 
   return (
@@ -289,7 +293,7 @@ export default function UsersPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Kullanıcılar ({users.length})
+            Kullanıcılar ({usersResponse?.pagination?.total || 0})
           </CardTitle>
           <CardDescription>
             Sistemdeki tüm kullanıcıların listesi
@@ -371,6 +375,36 @@ export default function UsersPage() {
               )}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {usersResponse?.pagination && usersResponse.pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                Sayfa {usersResponse.pagination.page} / {usersResponse.pagination.totalPages}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Önceki
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= usersResponse.pagination.totalPages}
+                >
+                  Sonraki
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+
         </CardContent>
       </Card>
 
@@ -450,7 +484,7 @@ export default function UsersPage() {
               )}
             </div>
 
-            {/* DÜZELTME: Checkbox sadece düzenleme modunda görünür */}
+            {/* Checkbox sadece düzenleme modunda görünür */}
             {editingUser && (
               <div className="flex items-center space-x-2">
                 <input

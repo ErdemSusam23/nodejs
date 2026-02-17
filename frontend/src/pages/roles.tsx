@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react' // useEffect eklendi
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { roleApi } from '@/api/roles'
-import type { Role, CreateRoleRequest, UpdateRoleRequest } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,43 +37,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 
+// --- TİP TANIMLARI ---
+interface Role {
+  _id: string
+  role_name: string
+  is_active: boolean
+  created_at: string
+}
+
 const roleSchema = z.object({
-  name: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
-  description: z.string().optional(),
+  role_name: z.string().min(2, 'Rol adı en az 2 karakter olmalıdır'),
   permissions: z.array(z.string()).min(1, 'En az bir yetki seçilmelidir'),
-  isActive: z.boolean().default(true),
+  is_active: z.boolean().default(true),
 })
 
 type RoleFormData = z.infer<typeof roleSchema>
-
-// Common permissions list
-const AVAILABLE_PERMISSIONS = [
-  { value: 'users.read', label: 'Kullanıcıları Görüntüleme', category: 'Kullanıcılar' },
-  { value: 'users.create', label: 'Kullanıcı Oluşturma', category: 'Kullanıcılar' },
-  { value: 'users.update', label: 'Kullanıcı Güncelleme', category: 'Kullanıcılar' },
-  { value: 'users.delete', label: 'Kullanıcı Silme', category: 'Kullanıcılar' },
-  { value: 'roles.read', label: 'Rolleri Görüntüleme', category: 'Roller' },
-  { value: 'roles.create', label: 'Rol Oluşturma', category: 'Roller' },
-  { value: 'roles.update', label: 'Rol Güncelleme', category: 'Roller' },
-  { value: 'roles.delete', label: 'Rol Silme', category: 'Roller' },
-  { value: 'categories.read', label: 'Kategorileri Görüntüleme', category: 'Kategoriler' },
-  { value: 'categories.create', label: 'Kategori Oluşturma', category: 'Kategoriler' },
-  { value: 'categories.update', label: 'Kategori Güncelleme', category: 'Kategoriler' },
-  { value: 'categories.delete', label: 'Kategori Silme', category: 'Kategoriler' },
-  { value: 'audit.read', label: 'Audit Logları Görüntüleme', category: 'Sistem' },
-  { value: 'audit.export', label: 'Audit Logları Dışa Aktarma', category: 'Sistem' },
-]
-
-const groupedPermissions = AVAILABLE_PERMISSIONS.reduce((acc, perm) => {
-  if (!acc[perm.category]) {
-    acc[perm.category] = []
-  }
-  acc[perm.category].push(perm)
-  return acc
-}, {} as Record<string, typeof AVAILABLE_PERMISSIONS>)
 
 export default function RolesPage() {
   const queryClient = useQueryClient()
@@ -85,6 +64,27 @@ export default function RolesPage() {
   const [deletingRole, setDeletingRole] = useState<Role | null>(null)
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
 
+  // Mevcut sistem yetkilerini çek
+  const { data: systemPermissionsData } = useQuery({
+    queryKey: ['system-permissions'],
+    queryFn: () => roleApi.getPermissions(),
+  })
+
+  // Backend'den gelen yetki listesini formatla
+  const AVAILABLE_PERMISSIONS = (systemPermissionsData?.privileges || []).map((p: any) => ({
+      value: p.key,
+      label: p.name,
+      category: p.group || "Diğer"
+  }));
+
+  const groupedPermissions = AVAILABLE_PERMISSIONS.reduce((acc: any, perm: any) => {
+    if (!acc[perm.category]) {
+      acc[perm.category] = []
+    }
+    acc[perm.category].push(perm)
+    return acc
+  }, {} as Record<string, typeof AVAILABLE_PERMISSIONS>)
+
   const {
     register,
     handleSubmit,
@@ -94,10 +94,20 @@ export default function RolesPage() {
   } = useForm<RoleFormData>({
     resolver: zodResolver(roleSchema),
     defaultValues: {
-      isActive: true,
+      is_active: true,
       permissions: [],
     },
   })
+
+  // --- KRİTİK DÜZELTME: State değişince formu güncelle ---
+  // Biz checkbox'ları manuel yönetiyoruz, bu yüzden react-hook-form'a 
+  // "bak permissions alanı değişti" dememiz lazım.
+  useEffect(() => {
+    setValue('permissions', selectedPermissions, { 
+      shouldValidate: true, // Validasyonu tetikle (hata varsa silsin)
+      shouldDirty: true 
+    })
+  }, [selectedPermissions, setValue])
 
   // Fetch roles
   const { data: rolesData, isLoading } = useQuery({
@@ -107,13 +117,11 @@ export default function RolesPage() {
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: (data: CreateRoleRequest) => roleApi.createRole(data),
+    mutationFn: (data: any) => roleApi.createRole(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles'] })
       toast.success('Rol başarıyla oluşturuldu')
-      setIsCreateOpen(false)
-      reset()
-      setSelectedPermissions([])
+      handleCloseDialog()
     },
     onError: () => {
       toast.error('Rol oluşturulurken bir hata oluştu')
@@ -122,14 +130,12 @@ export default function RolesPage() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateRoleRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
       roleApi.updateRole(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles'] })
       toast.success('Rol başarıyla güncellendi')
-      setEditingRole(null)
-      reset()
-      setSelectedPermissions([])
+      handleCloseDialog()
     },
     onError: () => {
       toast.error('Rol güncellenirken bir hata oluştu')
@@ -151,8 +157,9 @@ export default function RolesPage() {
 
   const onSubmit = (data: RoleFormData) => {
     const submitData = {
-      ...data,
-      permissions: selectedPermissions,
+      role_name: data.role_name,
+      is_active: data.is_active,
+      permissions: selectedPermissions, // State'den alıyoruz
     }
 
     if (editingRole) {
@@ -162,12 +169,21 @@ export default function RolesPage() {
     }
   }
 
-  const handleEdit = (role: Role) => {
+  const handleEdit = async (role: Role) => {
     setEditingRole(role)
-    setValue('name', role.name)
-    setValue('description', role.description || '')
-    setValue('isActive', role.isActive)
-    setSelectedPermissions(role.permissions || [])
+    setValue('role_name', role.role_name)
+    setValue('is_active', role.is_active)
+    
+    // Yetkileri yükle
+    try {
+        // Eğer api/roles.ts güncellenmezse burası hata verir
+        const privileges = await roleApi.getRolePrivileges(role._id);
+        const perms = privileges.map(p => p.permission);
+        setSelectedPermissions(perms);
+    } catch (e) {
+        toast.error("Rol yetkileri yüklenemedi");
+        setSelectedPermissions([]);
+    }
   }
 
   const handleCloseDialog = () => {
@@ -186,8 +202,8 @@ export default function RolesPage() {
   }
 
   const toggleCategoryPermissions = (category: string) => {
-    const categoryPerms = groupedPermissions[category].map((p) => p.value)
-    const allSelected = categoryPerms.every((p) => selectedPermissions.includes(p))
+    const categoryPerms = groupedPermissions[category].map((p: any) => p.value)
+    const allSelected = categoryPerms.every((p: string) => selectedPermissions.includes(p))
     
     if (allSelected) {
       setSelectedPermissions((prev) => prev.filter((p) => !categoryPerms.includes(p)))
@@ -215,7 +231,7 @@ export default function RolesPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Roller ({rolesData?.data?.length || 0})
+            Roller ({rolesData?.pagination?.total || 0})
           </CardTitle>
           <CardDescription>
             Sistemdeki tüm rollerin listesi
@@ -225,9 +241,7 @@ export default function RolesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>İsim</TableHead>
-                <TableHead>Açıklama</TableHead>
-                <TableHead>Yetkiler</TableHead>
+                <TableHead>Rol Adı</TableHead>
                 <TableHead>Durum</TableHead>
                 <TableHead>Oluşturulma</TableHead>
                 <TableHead className="text-right">İşlemler</TableHead>
@@ -236,13 +250,13 @@ export default function RolesPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={4} className="text-center">
                     Yükleniyor...
                   </TableCell>
                 </TableRow>
               ) : rolesData?.data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={4} className="text-center">
                     Rol bulunamadı
                   </TableCell>
                 </TableRow>
@@ -252,24 +266,16 @@ export default function RolesPage() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <Shield className="h-4 w-4 text-muted-foreground" />
-                        {role.name}
+                        {role.role_name}
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {role.description || '-'}
-                    </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {role.permissions?.length || 0} yetki
+                      <Badge variant={role.is_active ? 'default' : 'secondary'}>
+                        {role.is_active ? 'Aktif' : 'Pasif'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={role.isActive ? 'default' : 'secondary'}>
-                        {role.isActive ? 'Aktif' : 'Pasif'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(role.createdAt).toLocaleDateString('tr-TR')}
+                      {new Date(role.created_at).toLocaleDateString('tr-TR')}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -340,30 +346,21 @@ export default function RolesPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">İsim *</Label>
-                <Input id="name" {...register('name')} />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                <Label htmlFor="role_name">Rol Adı *</Label>
+                <Input id="role_name" {...register('role_name')} />
+                {errors.role_name && (
+                  <p className="text-sm text-destructive">{errors.role_name.message}</p>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Açıklama</Label>
-                <Textarea
-                  id="description"
-                  {...register('description')}
-                  rows={3}
-                />
               </div>
 
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="isActive"
-                  {...register('isActive')}
+                  id="is_active"
+                  {...register('is_active')}
                   className="h-4 w-4 rounded border-gray-300"
                 />
-                <Label htmlFor="isActive" className="cursor-pointer">
+                <Label htmlFor="is_active" className="cursor-pointer">
                   Aktif
                 </Label>
               </div>
@@ -384,8 +381,8 @@ export default function RolesPage() {
               )}
 
               <div className="space-y-4">
-                {Object.entries(groupedPermissions).map(([category, perms]) => {
-                  const allSelected = perms.every((p) =>
+                {Object.entries(groupedPermissions).map(([category, perms]: [string, any]) => {
+                  const allSelected = perms.every((p: any) =>
                     selectedPermissions.includes(p.value)
                   )
 
@@ -408,7 +405,7 @@ export default function RolesPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="grid gap-3 sm:grid-cols-2">
-                          {perms.map((perm) => (
+                          {perms.map((perm: any) => (
                             <div
                               key={perm.value}
                               className="flex items-center space-x-2"
@@ -450,8 +447,8 @@ export default function RolesPage() {
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation */}
+      
+      {/* Delete Modal aynı kaldı... */}
       <AlertDialog
         open={!!deletingRole}
         onOpenChange={() => setDeletingRole(null)}
@@ -460,7 +457,7 @@ export default function RolesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Rolü sil?</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong>{deletingRole?.name}</strong> adlı rolü silmek
+              <strong>{deletingRole?.role_name}</strong> adlı rolü silmek
               istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </AlertDialogDescription>
           </AlertDialogHeader>

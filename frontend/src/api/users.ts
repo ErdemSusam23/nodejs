@@ -35,10 +35,10 @@ export const userApi = {
 
   // 4. Kullanıcı Güncelle (POST /users/update)
   // Backend PUT /users/:id DEĞİL, POST /users/update bekliyor
-  updateUser: async (id: string, userData: UpdateUserRequest): Promise<User> => {
-    // Backend body içinde "id" alanını bekliyor
+  updateUser: async (_id: string, userData: UpdateUserRequest): Promise<User> => {
+    // KRİTİK DÜZELTME: Backend body içinde "_id" bekliyor (id değil)
     const { data } = await apiClient.post('/users/update', { 
-      id, 
+      _id,
       ...userData 
     })
     return data.data
@@ -46,15 +46,15 @@ export const userApi = {
 
   // 5. Kullanıcı Sil (POST /users/delete)
   // Backend DELETE /users/:id DEĞİL, POST /users/delete bekliyor
-  deleteUser: async (id: string): Promise<void> => {
+  deleteUser: async (_id: string): Promise<void> => {
     // Backend body içinde "id" alanını bekliyor
-    await apiClient.post('/users/delete', { id })
+    await apiClient.post('/users/delete', { _id })
   },
 
   // 6. Durum Değiştir (toggle-status diye bir route yok, update kullanıyoruz)
-  toggleUserStatus: async (id: string, currentStatus: boolean): Promise<void> => {
+  toggleUserStatus: async (_id: string, currentStatus: boolean): Promise<void> => {
     await apiClient.post('/users/update', {
-      id,
+      _id,
       is_active: !currentStatus
     })
   },

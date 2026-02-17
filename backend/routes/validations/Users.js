@@ -17,7 +17,8 @@ const update = Joi.object({
     email: Joi.string().email().optional(),
     password: Joi.string().min(Enums.PASS_LENGTH || 8).optional(),
     phone_number: Joi.string().optional(),
-    roles: Joi.array().items(Joi.string()).optional()
+    roles: Joi.array().items(Joi.string()).optional(),
+    is_active: Joi.bool().optional()
 });
 
 const login = Joi.object({

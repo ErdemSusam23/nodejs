@@ -7,8 +7,15 @@ import type {
   RoleFilters,
 } from '@/types'
 
+// Backend'den gelen Privilege yapısı
+export interface RolePrivilege {
+  _id: string
+  role_id: string
+  permission: string
+}
+
 export const roleApi = {
-  // Get all roles with filters
+  // Get all roles
   getRoles: async (filters?: RoleFilters): Promise<PaginatedResponse<Role>> => {
     const { data } = await apiClient.get('/roles', {
       params: filters,
@@ -19,29 +26,39 @@ export const roleApi = {
   // Get single role
   getRole: async (id: string): Promise<Role> => {
     const { data } = await apiClient.get<Role>(`/roles/${id}`)
-    return data
+    return data.data
   },
 
   // Create role
   createRole: async (roleData: CreateRoleRequest): Promise<Role> => {
-    const { data } = await apiClient.post<Role>('/roles', roleData)
-    return data
+    const { data } = await apiClient.post('/roles/add', roleData)
+    return data.data
   },
 
   // Update role
   updateRole: async (id: string, roleData: UpdateRoleRequest): Promise<Role> => {
-    const { data } = await apiClient.put<Role>(`/roles/${id}`, roleData)
-    return data
+    // Backend update body içinde _id bekliyor
+    const { data } = await apiClient.post('/roles/update', { _id: id, ...roleData })
+    return data.data
   },
 
   // Delete role
   deleteRole: async (id: string): Promise<void> => {
-    await apiClient.delete(`/roles/${id}`)
+    await apiClient.post('/roles/delete', { _id: id })
   },
 
-  // Get available permissions
-  getPermissions: async (): Promise<string[]> => {
-    const { data } = await apiClient.get<{ permissions: string[] }>('/roles/permissions')
-    return data.permissions
+  // Get ALL system permissions (Checkbox listesi için)
+  getPermissions: async (): Promise<any> => {
+    const { data } = await apiClient.get('/roles/permissions')
+    return data.data
   },
+
+  // Get privileges for a SPECIFIC role (Edit işlemi için gerekli)
+  // BU FONKSİYON EKSİKTİ, EKLENDİ:
+  getRolePrivileges: async (roleId: string): Promise<RolePrivilege[]> => {
+    const { data } = await apiClient.get('/roles/role_privileges', {
+      params: { role_id: roleId }
+    })
+    return data.data
+  }
 }

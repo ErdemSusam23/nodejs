@@ -1,6 +1,7 @@
 import apiClient from '@/lib/api-client'
 import type { LoginRequest, LoginResponse, User } from '@/types'
 
+
 export const authApi = {
   // Login
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {

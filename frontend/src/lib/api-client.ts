@@ -1,8 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { toast } from 'sonner'
 import Cookie from 'js-cookie'
+import { API_URL } from "@/config/env"
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+
 
 export const apiClient = axios.create({
   baseURL: API_URL,

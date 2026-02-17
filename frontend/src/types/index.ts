@@ -86,12 +86,8 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  code: number
-  message: string
-  data: {
-    user: User
-    token: string
-  }
+  user: User
+  token: string
 }
 
 // --- AUDIT LOG TYPES (Backend Şemasına Göre Düzeltildi) ---

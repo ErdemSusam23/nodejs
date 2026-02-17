@@ -38,7 +38,7 @@ services:
     environment:
       # NOT: Bu değer BUILD sırasında gömülür, sonradan değiştirilemez
       # Production deploy'da Vercel env variable kullanılacak
-      - VITE_API_URL=${VITE_API_URL:-http://localhost:3000/api}
+      - VITE_API_URL=${VITE_API_URL:-nodejs-production-fb070.up.railway.app/api}
     networks:
       - app-network
 

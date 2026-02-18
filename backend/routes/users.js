@@ -236,34 +236,39 @@ router.post('/delete', auth.authenticate(), auth.checkPrivileges("user_delete"),
         res.status(err.code || Enums.HTTP_CODES.INTERNAL_SERVER_ERROR).json(errorResponse);
     }
 });
-
 /* POST Login */
 router.post('/login', validate(schemas.login), async (req, res) => {
-    /*
-        #swagger.tags = ['Users']
-        #swagger.summary = 'User login'
-        #swagger.description = 'Authenticate user and receive JWT token'
-        #swagger.parameters['body'] = {
-            in: 'body', required: true,
-            schema: { $ref: '#/definitions/LoginRequest' }
-        }
-        #swagger.responses[200] = { description: 'Login successful', schema: { $ref: '#/definitions/LoginResponse' } }
-        #swagger.responses[401] = { description: 'Invalid email or password' }
-    */
     try {
         const { email, password } = req.body;
 
+        // 1. Kullanıcıyı bul
         const user = await Users.findOne({ email: email });
         if (!user) {
             throw new CustomError(Enums.HTTP_CODES.UNAUTHORIZED, "Geçersiz email veya şifre");
         }
 
+        // 2. Şifre kontrolü
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             throw new CustomError(Enums.HTTP_CODES.UNAUTHORIZED, "Geçersiz email veya şifre");
         }
 
-        const payload = { id: user._id, email: user.email };
+        // 3. Rolleri ve Yetkileri Çekme
+        const userRoles = await UserRoles.find({ user_id: user._id });
+        const roleIds = userRoles.map(ur => ur.role_id);
+
+        // Token'a koymuyoruz ama Frontend menüleri çizebilsin diye response'a eklemek için çekiyoruz
+        const rolePrivileges = await RolePrivileges.find({ role_id: { $in: roleIds } });
+        const privileges = rolePrivileges.map(rp => rp.permission);
+
+        // 4. Payload hazırlama (Sadece ID, Email ve Rol ID'leri)
+        const payload = { 
+            id: user._id, 
+            email: user.email,
+            roles: roleIds // Token şişmesin diye sadece ID'ler
+        };
+
+        // Token oluşturma
         const token = jwt.sign(payload, config.JWT.SECRET, { expiresIn: config.JWT.EXPIRE_TIME });
 
         AuditLogs.info(email, "Users", "Login", { _id: user._id });
@@ -274,7 +279,9 @@ router.post('/login', validate(schemas.login), async (req, res) => {
                 id: user._id,
                 email: user.email,
                 first_name: user.first_name,
-                last_name: user.last_name
+                last_name: user.last_name,
+                roles: roleIds,
+                privileges: privileges // Frontend'e açık halini gönderiyoruz
             }
         }));
 

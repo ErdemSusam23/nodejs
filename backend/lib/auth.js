@@ -5,8 +5,6 @@ const CustomError = require("./Error");
 const Enums = require("../config/Enums"); 
 
 // Modeller
-const Users = require("../db/models/Users");
-const UserRoles = require("../db/models/UserRoles");
 const RolePrivileges = require("../db/models/RolePrivileges");
 
 module.exports = function () {
@@ -17,33 +15,18 @@ module.exports = function () {
         },
         async (payload, done) => {
             try {
-                let user = await Users.findOne({ _id: payload.id });
+                // VERİTABANI SORGUSU YOK (STATELESS)
+                // Token geçerliyse, içindeki veriyi user objesi kabul ediyoruz.
+                // Bu sayede her requestte Users tablosuna gitmekten kurtulduk.
+                
+                const user = {
+                    id: payload.id,
+                    email: payload.email,
+                    roles: payload.roles // Token içindeki rol ID dizisi
+                };
 
-                if (user) {
-                    if (!user.is_active) {
-                        return done(null, false, { message: "User is not active." });
-                    }
-
-                    // Kullanıcının rollerini ve yetkilerini çekiyoruz
-                    let userRoles = await UserRoles.find({ user_id: payload.id });
-                    let roleIds = userRoles.map(ur => ur.role_id);
-                    let rolePrivileges = await RolePrivileges.find({ role_id: { $in: roleIds } });
-                    
-                    // Yetkileri (permission stringlerini) bir diziye dönüştür
-                    let privileges = rolePrivileges.map(rp => rp.permission);
-
-                    return done(null, {
-                        id: user._id,
-                        email: user.email,
-                        first_name: user.first_name,
-                        last_name: user.last_name,
-                        roles: roleIds,
-                        privileges: privileges // ["category_add", "user_view" vs.]
-                    });
-
-                } else {
-                    return done(null, false);
-                }
+                return done(null, user);
+                
             } catch (err) {
                 return done(err, false);
             }
@@ -59,23 +42,29 @@ module.exports = function () {
         authenticate: function () {
             return passport.authenticate("jwt", { session: false });
         },
-        // --- YENİ EKLENEN KISIM: Yetki Kontrolü ---
-        checkRoles: (...expectedRoles) => {
-            return (req, res, next) => {
-                // Şimdilik sadece yetki bazlı gidiyoruz ama ilerde rol kontrolü gerekirse burası kullanılabilir.
-                // Logic privilege ile aynı mantıkta kurulabilir.
-                next();
-            }
-        },
         checkPrivileges: (expectedPrivilege) => {
-            return (req, res, next) => {
-                // 1. Kullanıcının yetkileri var mı kontrol et
-                if (req.user && req.user.privileges && req.user.privileges.includes(expectedPrivilege)) {
-                    // Yetkisi var, geçiş izni ver
-                    next();
-                } else {
-                    // Yetkisi yok, 403 Forbidden fırlat
-                    next(new CustomError(Enums.HTTP_CODES.FORBIDDEN, "Privilege Error", "You do not have permission to perform this action."));
+            return async (req, res, next) => { // async ekledik çünkü DB sorgusu yapacağız
+                try {
+                    // Kullanıcının rolleri token'dan geldi mi?
+                    if (!req.user || !req.user.roles || req.user.roles.length === 0) {
+                        return next(new CustomError(Enums.HTTP_CODES.FORBIDDEN, "Privilege Error", "You do not have any roles assigned."));
+                    }
+
+                    // Sadece istenen yetki için veritabanına hafif bir sorgu atıyoruz
+                    // "Kullanıcının sahip olduğu Rol ID'lerinden (roles array) herhangi birinde,
+                    // beklenen yetki (permission) var mı?"
+                    const hasPrivilege = await RolePrivileges.findOne({ 
+                        role_id: { $in: req.user.roles }, 
+                        permission: expectedPrivilege 
+                    });
+
+                    if (hasPrivilege) {
+                        next();
+                    } else {
+                        throw new CustomError(Enums.HTTP_CODES.FORBIDDEN, "Privilege Error", "You do not have permission to perform this action.");
+                    }
+                } catch (err) {
+                     next(err);
                 }
             }
         }

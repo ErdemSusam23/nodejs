@@ -10,7 +10,7 @@ const Roles = require('../db/models/Roles');
 const Categories = require('../db/models/Categories'); 
 
 /* GET Dashboard Stats */
-router.get('/dashboard', auth.authenticate(), async (req, res, next) => {
+router.get('/', auth.authenticate(), async (req, res, next) => {
     /*
         #swagger.tags = ['Stats']
         #swagger.summary = 'Get Dashboard Statistics'

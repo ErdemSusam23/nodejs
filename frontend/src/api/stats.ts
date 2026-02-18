@@ -13,7 +13,7 @@ export const statsApi = {
   // Backend'de routes/stats.js içinde router.get('/dashboard'...) tanımladık
   // ve app.js'de '/api/stats' altına mount ettiğimiz varsayımıyla:
   getDashboardStats: async (): Promise<DashboardStats> => {
-    const { data } = await apiClient.get('/stats/dashboard')
+    const { data } = await apiClient.get('/dashboard')
     
     // Backend Response yapısı: { code: 200, data: { users: 5, roles: 2... } }
     // apiClient interceptor'ın 'data'yı döndüğünü ve buradan da içindeki 'data'yı aldığımızı varsayıyoruz.

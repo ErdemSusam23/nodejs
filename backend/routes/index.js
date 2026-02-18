@@ -8,5 +8,6 @@ router.use('/auditlogs', require('./auditlogs'));
 router.use('/routes', require('./routes'));  // upload
 router.use('/email', require('./email'));
 router.use('/auth', require('./auth'));
+router.use('/dashboard', require('./dashboard'))
 
 module.exports = router;

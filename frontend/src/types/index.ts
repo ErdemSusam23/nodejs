@@ -148,3 +148,9 @@ export interface ApiResponse<T = unknown> {
     description?: string
   }
 }
+
+export interface DashboardStats {
+  users: number
+  roles: number
+  categories: number
+}

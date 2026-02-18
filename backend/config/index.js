@@ -62,8 +62,8 @@ module.exports = {
             "METHODS": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         },
         "RATE_LIMIT": {
-            "WINDOW_MS": 15 * 60 * 1000, // 15 Dakika
-            "MAX": 5000 // 15 dakikada max 100 istek (IP başına)
+            "WINDOW_MS": 10 * 60 * 1000, // 15 Dakika
+            "MAX": 500 // 15 dakikada max 100 istek (IP başına)
         }
     }
 };

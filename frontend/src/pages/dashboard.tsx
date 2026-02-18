@@ -5,6 +5,7 @@ import { categoryApi } from '@/api/categories'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Shield, FolderTree, Activity } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { statsApi } from '@/api/stats'
 
 function StatCard({
   title,
@@ -35,19 +36,13 @@ function StatCard({
 }
 
 export default function DashboardPage() {
-  const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ['users', { page: 1, limit: 1 }],
-    queryFn: () => userApi.getUsers({ page: 1, limit: 1 }),
-  })
-
-  const { data: rolesData, isLoading: rolesLoading } = useQuery({
-    queryKey: ['roles', { page: 1, limit: 1 }],
-    queryFn: () => roleApi.getRoles({ page: 1, limit: 1 }),
-  })
-
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
-    queryKey: ['categories', { page: 1, limit: 1 }],
-    queryFn: () => categoryApi.getCategories({ page: 1, limit: 1 }),
+  // TEK SORGU: Backend'e tek bir istek atıyoruz
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: statsApi.getDashboardStats, 
+    // userApi.getUsers gibi, doğrudan fonksiyonu veriyoruz.
+    // Eğer apiClient response yapın data'nın içindeki data'yı dönüyorsa
+    // react-query'de 'data' değişkeni direkt { users: 10, ... } objesi olur.
   })
 
   return (
@@ -62,21 +57,21 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Toplam Kullanıcı"
-          value={usersData?.data?.pagination?.total || 0}
+          value={stats?.users || 0}
           icon={Users}
-          isLoading={usersLoading}
+          isLoading={isLoading}
         />
         <StatCard
           title="Toplam Rol"
-          value={rolesData?.data?.pagination?.total || 0}
+          value={stats?.roles || 0}
           icon={Shield}
-          isLoading={rolesLoading}
+          isLoading={isLoading}
         />
         <StatCard
           title="Toplam Kategori"
-          value={categoriesData?.data?.pagination?.total || 0}
+          value={stats?.categories|| 0}
           icon={FolderTree}
-          isLoading={categoriesLoading}
+          isLoading={isLoading}
         />
         <StatCard
           title="Aktif Oturumlar"

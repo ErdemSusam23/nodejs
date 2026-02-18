@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import { statsApi } from '@/api/stats' // Tek ihtiyacın olan bu
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Shield, FolderTree, Activity } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { statsApi } from '@/api/stats'
 
 function StatCard({
   title,
@@ -33,14 +33,15 @@ function StatCard({
 }
 
 export default function DashboardPage() {
-  // TEK SORGU: Backend'e tek bir istek atıyoruz
-  const { data: stats, isLoading } = useQuery({
+  const { data: statsData, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
-    queryFn: statsApi.getDashboardStats, 
-    // userApi.getUsers gibi, doğrudan fonksiyonu veriyoruz.
-    // Eğer apiClient response yapın data'nın içindeki data'yı dönüyorsa
-    // react-query'de 'data' değişkeni direkt { users: 10, ... } objesi olur.
+    queryFn: statsApi.getDashboardStats,
+    staleTime: 1000 * 60 * 5, // 5 dakika boyunca cache'den oku, tekrar istek atma (Performans)
   })
+
+  // Eğer API yanıtın { code: 200, data: {...} } formatındaysa güvenli erişim:
+  // statsData?.data varsa onu al, yoksa (direkt data dönüyorsa) statsData'yı al.
+  //const stats = statsData || {};
 
   return (
     <div className="space-y-8">
@@ -54,19 +55,19 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Toplam Kullanıcı"
-          value={stats?.users || 0}
+          value={statsData?.users || 0}
           icon={Users}
           isLoading={isLoading}
         />
         <StatCard
           title="Toplam Rol"
-          value={stats?.roles || 0}
+          value={statsData?.roles || 0}
           icon={Shield}
           isLoading={isLoading}
         />
         <StatCard
           title="Toplam Kategori"
-          value={stats?.categories|| 0}
+          value={statsData?.categories || 0}
           icon={FolderTree}
           isLoading={isLoading}
         />
@@ -77,8 +78,9 @@ export default function DashboardPage() {
           isLoading={false}
         />
       </div>
-
-      <Card>
+        
+       {/* Alt kısımdaki Hoşgeldiniz kartı aynı kalabilir */}
+       <Card>
         <CardHeader>
           <CardTitle>Hoş Geldiniz</CardTitle>
         </CardHeader>
